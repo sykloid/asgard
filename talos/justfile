@@ -1,0 +1,47 @@
+CLUSTER_NAME := "asgard"
+ENDPOINT := "https://192.168.1.16:6443"
+OUTPUT_DIR := "outputs"
+TALOS_VERSION := "v1.11.1"
+
+set shell := ["zsh", "-c"]
+
+# Verify integrity of installer schematic.
+verify-schematic:
+  @diff -s <(yq .machine.install.image < inputs/common.patch.yml) \
+           <(echo factory.talos.dev/metal-installer/$(curl -s -X POST --data-binary @inputs/schematic.yml https://factory.talos.dev/schematics | yq .id):{{ TALOS_VERSION }})
+
+# Generate talosconfig file
+gen-talosconfig:
+  talosctl gen config \
+    --with-secrets <(op read op://asgard/talos-secret/secrets.yml) \
+    --talos-version {{ TALOS_VERSION }} \
+    --output {{ OUTPUT_DIR }}/talosconfig.yml \
+    --output-types talosconfig \
+    --force \
+    {{ CLUSTER_NAME }} \
+    {{ ENDPOINT }}
+  TALOSCONFIG={{ OUTPUT_DIR }}/talosconfig.yml talosctl config endpoints talos-01 talos-02 talos-03
+
+# Generate talos machine config for NODE
+gen-machineconfig NODE:
+  talosctl gen config \
+    --with-secrets <(op read op://asgard/talos-secret/secrets.yml) \
+    --config-patch @inputs/common.patch.yml \
+    --config-patch @<(TS_AUTHKEY=$(op read op://asgard/talos-tailscale-authkey/credential) envsubst < inputs/tailscale.patch.tpl.yml) \
+    --config-patch @inputs/{{ NODE }}.patch.yml \
+    --output-types controlplane \
+    --output {{ OUTPUT_DIR }}/{{ NODE }}.yml \
+    --talos-version {{ TALOS_VERSION }} \
+    --with-docs=false \
+    --with-examples=false \
+    --force \
+    {{ CLUSTER_NAME }} \
+    {{ ENDPOINT }}
+
+# Generate all machineconfigs.
+gen-all-machineconfig:
+  for NODE in talos-{01..03}; do just gen-machineconfig ${NODE}; done
+
+# Generate the kubeconfig.
+gen-kubeconfig:
+  talosctl -n talos-01 kubeconfig - > outputs/kubeconfig.yml

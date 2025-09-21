@@ -1,0 +1,12 @@
+machine:
+  install:
+    image: factory.talos.dev/metal-installer/e2e3b54334c85fdef4d78e88f880d185e0ce0ba0c9b5861bb5daa1cd6574db9b:v1.11.1
+cluster:
+  allowSchedulingOnControlPlanes: true
+  discovery:
+    enabled: false
+  network:
+    cni:
+      name: none
+  proxy:
+    disabled: true
