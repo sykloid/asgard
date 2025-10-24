@@ -1,0 +1,11 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ConfigManagementPlugin
+metadata:
+  name: argocd-tanka-plugin
+spec:
+  version: "1.0"
+  init:
+    command: ["/init.nu"]
+  generate:
+    command: ["/generate.nu"]
