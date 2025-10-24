@@ -15,5 +15,6 @@
   data: {
     argoCD: import 'argo-cd.jsonnet',
     cilium: import 'cilium.jsonnet',
+    nfsProvisioner: import 'nfs-subdir-external-provisioner.jsonnet',
   },
 }
