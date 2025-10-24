@@ -13,7 +13,7 @@
     ],
   },
   data: {
-    argoCDApplication: import 'argo-cd-application.jsonnet',
+    argoCD: import 'argo-cd.jsonnet',
     cilium: import 'cilium.jsonnet',
   },
 }
