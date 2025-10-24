@@ -14,5 +14,6 @@
   },
   data: {
     argoCDApplication: import 'argo-cd-application.jsonnet',
+    cilium: import 'cilium.jsonnet',
   },
 }
