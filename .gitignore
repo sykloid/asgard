@@ -1,2 +1,4 @@
 talos/outputs
 k8s/vendor
+
+charts/

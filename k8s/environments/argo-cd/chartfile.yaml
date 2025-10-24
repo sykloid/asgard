@@ -1,0 +1,8 @@
+directory: charts
+repositories:
+- name: argo
+  url: https://argoproj.github.io/argo-helm
+requires:
+- chart: argo/argo-cd
+  version: 8.3.7
+version: 1

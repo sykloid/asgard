@@ -1,0 +1,16 @@
+{
+  "apiVersion": "tanka.dev/v1alpha1",
+  "kind": "Environment",
+  "metadata": {
+    "name": "environments/argo-cd",
+    "namespace": "environments/argo-cd/main.jsonnet"
+  },
+  "spec": {
+    "contextNames": [
+      "admin@asgard"
+    ],
+    "namespace": "argo-cd",
+    "resourceDefaults": {},
+    "expectVersions": {}
+  }
+}
