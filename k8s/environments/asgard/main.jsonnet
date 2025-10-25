@@ -17,5 +17,6 @@
     cilium: import 'cilium.jsonnet',
     nfsProvisioner: import 'nfs-subdir-external-provisioner.jsonnet',
     externalSecrets: import 'external-secrets.jsonnet',
+    tailscale: import 'tailscale.jsonnet',
   },
 }
