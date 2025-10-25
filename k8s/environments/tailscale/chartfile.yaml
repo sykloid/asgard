@@ -1,0 +1,8 @@
+directory: charts
+repositories:
+- name: tailscale
+  url: https://pkgs.tailscale.com/helmcharts
+requires:
+- chart: tailscale/tailscale-operator
+  version: 1.86.5
+version: 1
