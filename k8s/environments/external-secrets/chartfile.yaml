@@ -1,0 +1,10 @@
+directory: charts
+repositories:
+- name: stable
+  url: https://charts.helm.sh/stable
+- name: external-secrets
+  url: https://charts.external-secrets.io
+requires:
+- chart: external-secrets/external-secrets
+  version: 0.19.2
+version: 1
