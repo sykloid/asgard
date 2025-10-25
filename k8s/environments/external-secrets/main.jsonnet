@@ -18,5 +18,6 @@ local helm = tanka.helm.new(std.thisFile);
       namespace: 'external-secrets',
       values: {},
     }),
+    asgardClusterSecretStore: import '1password-cluster-secret-store.jsonnet',
   },
 }
