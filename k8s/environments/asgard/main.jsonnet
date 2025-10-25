@@ -16,5 +16,6 @@
     argoCD: import 'argo-cd.jsonnet',
     cilium: import 'cilium.jsonnet',
     nfsProvisioner: import 'nfs-subdir-external-provisioner.jsonnet',
+    externalSecrets: import 'external-secrets.jsonnet',
   },
 }
