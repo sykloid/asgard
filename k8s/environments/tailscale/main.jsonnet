@@ -1,5 +1,6 @@
 local tanka = import 'github.com/grafana/jsonnet-libs/tanka-util/main.libsonnet';
 local helm = tanka.helm.new(std.thisFile);
+local es = import 'asgard/external-secrets.libsonnet';
 
 {
   apiVersion: 'tanka.dev/v1alpha1',
@@ -8,7 +9,7 @@ local helm = tanka.helm.new(std.thisFile);
     name: 'environments/tailscale',
   },
   spec: {
-    namespace: 'default',
+    namespace: 'tailscale',
     resourceDefaults: {},
     expectVersions: {},
     contextNames: [
@@ -32,36 +33,8 @@ local helm = tanka.helm.new(std.thisFile);
         },
       },
     }),
-    oauthSecret: {
-      apiVersion: 'external-secrets.io/v1',
-      kind: 'ExternalSecret',
-      metadata: {
-        name: 'operator-oauth',
-        namespace: 'tailscale',
-      },
-      spec: {
-        secretStoreRef: {
-          kind: 'ClusterSecretStore',
-          name: 'asgard-1password',
-        },
-        target: {
-          creationPolicy: 'Owner',
-        },
-        data: [
-          {
-            secretKey: 'client_id',
-            remoteRef: {
-              key: 'tailscale-operator-client/username',
-            },
-          },
-          {
-            secretKey: 'client_secret',
-            remoteRef: {
-              key: 'tailscale-operator-client/credential',
-            },
-          },
-        ],
-      },
-    },
+    oauthSecret: es.new('operator-oauth')
+               + es.withSecret('client_id', 'tailscale-operator-client/username')
+               + es.withSecret('client_secret', 'tailscale-operator-client/credential')
   },
 }
