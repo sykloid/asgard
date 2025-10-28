@@ -34,6 +34,14 @@
       {
         jsonPointers: [
           '/data/ca.crt',
+          '/data/ca.key',
+        ],
+        kind: 'Secret',
+        name: 'cilium-ca',
+      },
+      {
+        jsonPointers: [
+          '/data/ca.crt',
           '/data/tls.crt',
           '/data/tls.key',
         ],
