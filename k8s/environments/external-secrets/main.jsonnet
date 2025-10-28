@@ -8,7 +8,7 @@ local helm = tanka.helm.new(std.thisFile);
     name: 'environments/external-secrets',
   },
   spec: {
-    namespace: 'default',
+    namespace: 'external-secrets',
     resourceDefaults: {},
     expectVersions: {},
     contextNames: ['admin@asgard'],
