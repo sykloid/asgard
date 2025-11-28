@@ -5,8 +5,8 @@ local NAS_IP = '192.168.1.3';
 local NFS_SHARE_PATH = '/volume1/k8s';
 local SC_NAME = 'yggdrasil';
 
-function() {
-  'nfs-subdir-external-provisioner': helm.template('nfs-subdir-external-provisioner', 'charts/nfs-subdir-external-provisioner', {
+{
+  'nfs-subdir-external-provisioner-delete': helm.template('nfs-subdir-external-provisioner', 'charts/nfs-subdir-external-provisioner', {
     namespace: 'nfs-subdir-external-provisioner',
     values: {
       nfs: {
@@ -14,7 +14,21 @@ function() {
         path: NFS_SHARE_PATH,
       },
       storageClass: {
-        name: SC_NAME,
+        name: (SC_NAME + "-delete"),
+        reclaimPolicy: "Delete",
+      },
+    },
+  }),
+  'nfs-subdir-external-provisioner-retain': helm.template('nfs-subdir-external-provisioner', 'charts/nfs-subdir-external-provisioner', {
+    namespace: 'nfs-subdir-external-provisioner',
+    values: {
+      nfs: {
+        server: NAS_IP,
+        path: NFS_SHARE_PATH,
+      },
+      storageClass: {
+        name: (SC_NAME + "-retain"),
+        reclaimPolicy: "Retain",
       },
     },
   }),
