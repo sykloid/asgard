@@ -1,7 +1,7 @@
 CLUSTER_NAME := "asgard"
 ENDPOINT := "https://192.168.1.16:6443"
 OUTPUT_DIR := "outputs"
-TALOS_VERSION := "v1.11.1"
+TALOS_VERSION := "v1.11.5"
 
 set shell := ["zsh", "-c"]
 
@@ -27,7 +27,6 @@ gen-machineconfig NODE:
   talosctl gen config \
     --with-secrets <(op read op://asgard/talos-secret/secrets.yml) \
     --config-patch @inputs/common.patch.yml \
-    --config-patch @<(TS_AUTHKEY=$(op read op://asgard/talos-tailscale-authkey/credential) envsubst < inputs/tailscale.patch.tpl.yml) \
     --config-patch @inputs/{{ NODE }}.patch.yml \
     --output-types controlplane \
     --output {{ OUTPUT_DIR }}/{{ NODE }}.yml \
