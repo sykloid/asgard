@@ -3,7 +3,7 @@ local helm = tanka.helm.new(std.thisFile);
 
 local NAS_IP = '192.168.1.3';
 local NFS_SHARE_PATH = '/volume1/k8s';
-local SC_NAME = 'yggdrasil';
+local SC_NAME = 'yggdrasil-nfs';
 
 {
   'nfs-subdir-external-provisioner-delete': helm.template('nfs-subdir-external-provisioner', 'charts/nfs-subdir-external-provisioner', {
