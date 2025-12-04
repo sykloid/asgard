@@ -11,6 +11,9 @@ local helm = tanka.helm.new(std.thisFile);
         cm: {
           'kustomize.buildOptions': '--enable-helm',
         },
+        params: {
+          'server.insecure': true,
+        }
       },
       repoServer: {
         containerSecurityContext: {
