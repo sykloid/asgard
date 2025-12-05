@@ -16,20 +16,7 @@
       target: {
         creationPolicy: 'Owner',
       },
-      data: [
-        {
-          secretKey: 'client_id',
-          remoteRef: {
-            key: 'tailscale-operator-client/username',
-          },
-        },
-        {
-          secretKey: 'client_secret',
-          remoteRef: {
-            key: 'tailscale-operator-client/credential',
-          },
-        },
-      ],
+      data: base.secretRefs,
     },
   },
 
