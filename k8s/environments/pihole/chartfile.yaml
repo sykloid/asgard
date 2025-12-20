@@ -1,0 +1,10 @@
+directory: charts
+repositories:
+- name: stable
+  url: https://charts.helm.sh/stable
+- name: pihole
+  url: https://mojo2600.github.io/pihole-kubernetes
+requires:
+- chart: pihole/pihole
+  version: 2.34.0
+version: 1
