@@ -1,0 +1,8 @@
+directory: charts
+repositories:
+- name: asgard
+  url: oci://ghcr.io/sykloid/asgard/charts
+requires:
+- chart: asgard/synology-csi
+  version: 0.10.0-SNAPSHOT
+version: 1
