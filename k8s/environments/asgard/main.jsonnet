@@ -1,3 +1,5 @@
+local argoCD = import 'asgard/argo-cd.libsonnet';
+
 {
   apiVersion: 'tanka.dev/v1alpha1',
   kind: 'Environment',
@@ -18,5 +20,6 @@
     nfsProvisioner: import 'nfs-subdir-external-provisioner.jsonnet',
     externalSecrets: import 'external-secrets.jsonnet',
     tailscale: import 'tailscale.jsonnet',
+    synologyCSI: argoCD.new('synology-csi', 'synology-csi'),
   },
 }
