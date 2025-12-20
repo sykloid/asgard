@@ -32,11 +32,13 @@
         server: 'https://kubernetes.default.svc',
         namespace: if namespace == null then name else namespace,
       },
-      ignoreDifferences: base.ignoreDifferences,
+    } + if base.ignoreDifferences != [] then {
+      ignoreDifferences: base.ignoreDifferences
+    } else {} + if base.syncOptions != [] then {
       syncPolicy: {
-        syncOptions: base.syncOptions,
+        syncOptions: base.syncOptions
       }
-    },
+    } else {},
   },
   withSyncOptions: function(syncOptions) {
     syncOptions+: syncOptions
