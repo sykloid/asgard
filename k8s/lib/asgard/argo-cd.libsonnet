@@ -1,5 +1,5 @@
 {
-  new: function(name, env, project='argo-cd') {
+  new: function(name, env, project='asgard') {
     apiVersion: 'argoproj.io/v1alpha1',
     kind: 'Application',
     metadata: {
