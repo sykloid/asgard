@@ -1,0 +1,10 @@
+directory: charts
+repositories:
+- name: stable
+  url: https://charts.helm.sh/stable
+- name: external-dns
+  url: https://kubernetes-sigs.github.io/external-dns
+requires:
+- chart: external-dns/external-dns
+  version: 1.19.0
+version: 1
