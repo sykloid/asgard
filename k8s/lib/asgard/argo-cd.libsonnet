@@ -1,5 +1,9 @@
 {
-  new: function(name, env, project='asgard') {
+  new: function(name, env=null, namespace=null, project='asgard') {
+    local base = self,
+    ignoreDifferences:: [],
+    syncOptions:: [],
+
     apiVersion: 'argoproj.io/v1alpha1',
     kind: 'Application',
     metadata: {
@@ -18,7 +22,7 @@
             env: [
               {
                 name: 'TK_ENV',
-                value: env,
+                value: if env == null then name else env,
               },
             ],
           },
@@ -26,8 +30,18 @@
       ],
       destination: {
         server: 'https://kubernetes.default.svc',
-        namespace: 'argo-cd',
+        namespace: if namespace == null then name else namespace,
       },
+      ignoreDifferences: base.ignoreDifferences,
+      syncPolicy: {
+        syncOptions: base.syncOptions,
+      }
     },
   },
+  withSyncOptions: function(syncOptions) {
+    syncOptions+: syncOptions
+  },
+  withIgnoreDifferences: function(ignoreDifferences) {
+    ignoreDifferences+: ignoreDifferences
+  }
 }

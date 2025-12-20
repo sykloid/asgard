@@ -15,11 +15,45 @@ local argoCD = import 'asgard/argo-cd.libsonnet';
     ],
   },
   data: {
-    argoCD: import 'argo-cd.jsonnet',
-    cilium: import 'cilium.jsonnet',
-    nfsProvisioner: import 'nfs-subdir-external-provisioner.jsonnet',
-    externalSecrets: import 'external-secrets.jsonnet',
-    tailscale: import 'tailscale.jsonnet',
-    synologyCSI: argoCD.new('synology-csi', 'synology-csi'),
+    argoCD: argoCD.new('argo-cd'),
+    cilium: argoCD.new('cilium', namespace='kube-system') + argoCD.withIgnoreDifferences([
+      {
+        jsonPointers: [
+          '/data/ca.crt',
+        ],
+        kind: 'ConfigMap',
+        name: 'hubble-ca-cert',
+      },
+      {
+        jsonPointers: [
+          '/data/ca.crt',
+          '/data/ca.key',
+        ],
+        kind: 'Secret',
+        name: 'cilium-ca',
+      },
+      {
+        jsonPointers: [
+          '/data/ca.crt',
+          '/data/tls.crt',
+          '/data/tls.key',
+        ],
+        kind: 'Secret',
+        name: 'hubble-relay-client-certs',
+      },
+      {
+        jsonPointers: [
+          '/data/ca.crt',
+          '/data/tls.crt',
+          '/data/tls.key',
+        ],
+        kind: 'Secret',
+        name: 'hubble-server-certs',
+      },
+    ]),
+    nfsProvisioner: argoCD.new('nfs-subdir-external-provisioner'),
+    externalSecrets: argoCD.new('external-secrets') + argoCD.withSyncOptions(['ServerSideApply=true']),
+    tailscale: argoCD.new('tailscale'),
+    synologyCSI: argoCD.new('synology-csi'),
   },
 }
