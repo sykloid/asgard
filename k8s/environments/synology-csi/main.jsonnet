@@ -1,8 +1,7 @@
+local k = import '1.33/main.libsonnet';
 local es = import 'asgard/external-secrets.libsonnet';
 local tanka = import 'github.com/grafana/jsonnet-libs/tanka-util/main.libsonnet';
 local helm = tanka.helm.new(std.thisFile);
-
-local namespace = 'synology-csi';
 
 {
   apiVersion: 'tanka.dev/v1alpha1',
@@ -11,24 +10,15 @@ local namespace = 'synology-csi';
     name: 'environments/synology-csi',
   },
   spec: {
-    namespace: namespace,
+    namespace: 'synology-csi',
     resourceDefaults: {},
     expectVersions: {},
     contextNames: ['admin@asgard'],
   },
   data: {
-    namespace: {
-      apiVersion: 'v1',
-      kind: 'Namespace',
-      metadata: {
-        name: namespace,
-        labels: {
-          'pod-security.kubernetes.io/enforce': 'privileged',
-        },
-      },
-    },
+    namespace: k.core.v1.namespace.new($.spec.namespace),
     synologyCSI: helm.template('synology-csi', 'charts/synology-csi', {
-      namespace: 'synology-csi',
+      namespace: $.spec.namespace,
       values: {
         storageClasses: {
           // Unclear why this needs to be present if this dictionary overrides builtin values.

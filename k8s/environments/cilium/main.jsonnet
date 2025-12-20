@@ -16,7 +16,7 @@ local helm = tanka.helm.new(std.thisFile);
   data: {
     cilium: helm.template(
       'cilium', 'charts/cilium', {
-        namespace: 'kube-system',
+        namespace: $.spec.namespace,
         values: {
           routingMode: "native",
           kubeProxyReplacement: true,

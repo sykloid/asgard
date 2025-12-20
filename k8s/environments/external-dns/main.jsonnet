@@ -1,6 +1,7 @@
-local es = import 'asgard/external-secrets.libsonnet';
+local k = import "1.33/main.libsonnet";
 local tanka = import 'github.com/grafana/jsonnet-libs/tanka-util/main.libsonnet';
 local helm = tanka.helm.new(std.thisFile);
+local es = import 'asgard/external-secrets.libsonnet';
 
 {
   apiVersion: 'tanka.dev/v1alpha1',
@@ -15,6 +16,7 @@ local helm = tanka.helm.new(std.thisFile);
     contextNames: ['admin@asgard'],
   },
   data: {
+    namespace: k.core.v1.namespace.new($.spec.namespace),
     externalDNS: helm.template('external-dns', 'charts/external-dns', {
       namespace: $.spec.namespace,
       values: {

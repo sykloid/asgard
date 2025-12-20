@@ -1,7 +1,6 @@
+local k = import '1.33/main.libsonnet';
 local tanka = import 'github.com/grafana/jsonnet-libs/tanka-util/main.libsonnet';
 local helm = tanka.helm.new(std.thisFile);
-
-local namespace = "external-secrets";
 
 {
   apiVersion: 'tanka.dev/v1alpha1',
@@ -10,19 +9,13 @@ local namespace = "external-secrets";
     name: 'environments/external-secrets',
   },
   spec: {
-    namespace: namespace,
+    namespace: 'external-secrets',
     resourceDefaults: {},
     expectVersions: {},
     contextNames: ['admin@asgard'],
   },
   data: {
-    namespace: {
-      apiVersion: "v1",
-      kind: "Namespace",
-      metadata: {
-        name: namespace
-      }
-    },
+    namespace: k.core.v1.namespace.new($.spec.namespace),
     externalSecrets: helm.template('external-secrets', 'charts/external-secrets', {
       namespace: 'external-secrets',
       values: {},

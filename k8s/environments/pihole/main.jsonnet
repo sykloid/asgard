@@ -1,3 +1,4 @@
+local k = import '1.33/main.libsonnet';
 local es = import 'asgard/external-secrets.libsonnet';
 local tanka = import 'github.com/grafana/jsonnet-libs/tanka-util/main.libsonnet';
 local helm = tanka.helm.new(std.thisFile);
@@ -15,6 +16,7 @@ local helm = tanka.helm.new(std.thisFile);
     contextNames: ['admin@asgard'],
   },
   data: {
+    namespace: k.core.v1.namespace.new($.spec.namespace),
     pihole: helm.template('pihole', 'charts/pihole', {
       namespace: $.spec.namespace,
       values: {
