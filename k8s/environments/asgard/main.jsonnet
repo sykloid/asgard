@@ -55,5 +55,6 @@ local argoCD = import 'asgard/argo-cd.libsonnet';
     externalSecrets: argoCD.new('external-secrets') + argoCD.withSyncOptions(['ServerSideApply=true']),
     tailscale: argoCD.new('tailscale'),
     synologyCSI: argoCD.new('synology-csi'),
+    pihole: argoCD.new('pihole'),
   },
 }
