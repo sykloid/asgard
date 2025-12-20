@@ -56,5 +56,6 @@ local argoCD = import 'asgard/argo-cd.libsonnet';
     tailscale: argoCD.new('tailscale'),
     synologyCSI: argoCD.new('synology-csi'),
     pihole: argoCD.new('pihole'),
+    externalDNS: argoCD.new('external-dns'),
   },
 }
