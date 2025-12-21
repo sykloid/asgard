@@ -15,8 +15,8 @@ local argoCD = import 'asgard/argo-cd.libsonnet';
     ],
   },
   data: {
-    argoCD: argoCD.new('argo-cd'),
-    cilium: argoCD.new('cilium', namespace='kube-system') + argoCD.withIgnoreDifferences([
+    argoCD: argoCD.application.new('argo-cd'),
+    cilium: argoCD.application.new('cilium', namespace='kube-system') + argoCD.application.withIgnoreDifferences([
       {
         jsonPointers: [
           '/data/ca.crt',
@@ -51,11 +51,12 @@ local argoCD = import 'asgard/argo-cd.libsonnet';
         name: 'hubble-server-certs',
       },
     ]),
-    nfsProvisioner: argoCD.new('nfs-subdir-external-provisioner'),
-    externalSecrets: argoCD.new('external-secrets') + argoCD.withSyncOptions(['ServerSideApply=true']),
-    tailscale: argoCD.new('tailscale'),
-    synologyCSI: argoCD.new('synology-csi'),
-    pihole: argoCD.new('pihole'),
-    externalDNS: argoCD.new('external-dns'),
+    nfsProvisioner: argoCD.application.new('nfs-subdir-external-provisioner'),
+    externalSecrets: argoCD.application.new('external-secrets') +
+                     argoCD.application.withSyncOptions(['ServerSideApply=true']),
+    tailscale: argoCD.application.new('tailscale'),
+    synologyCSI: argoCD.application.new('synology-csi'),
+    pihole: argoCD.application.new('pihole'),
+    externalDNS: argoCD.application.new('external-dns'),
   },
 }
