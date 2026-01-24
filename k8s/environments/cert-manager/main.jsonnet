@@ -107,7 +107,6 @@ local helm = tanka.helm.new(std.thisFile);
       kind: 'Bundle',
       metadata: {
         name: 'asgard-root-ca-bundle',
-        namsepace: 'cert-manager',
       },
       spec: {
         sources: [
