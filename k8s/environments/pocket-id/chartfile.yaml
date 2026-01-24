@@ -1,0 +1,8 @@
+directory: charts
+repositories:
+- name: anza-labs
+  url: https://anza-labs.github.io/charts
+requires:
+- chart: anza-labs/pocket-id
+  version: 1.7.2
+version: 1
