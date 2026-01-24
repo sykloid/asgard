@@ -54,6 +54,7 @@ local argoCD = import 'asgard/argo-cd.libsonnet';
     nfsProvisioner: argoCD.application.new('nfs-subdir-external-provisioner'),
     externalSecrets: argoCD.application.new('external-secrets') +
                      argoCD.application.withSyncOptions(['ServerSideApply=true']),
+    certManager: argoCD.application.new('cert-manager'),
     tailscale: argoCD.application.new('tailscale'),
     synologyCSI: argoCD.application.new('synology-csi'),
     pihole: argoCD.application.new('pihole'),
