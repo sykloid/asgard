@@ -26,11 +26,46 @@ local helm = tanka.helm.new(std.thisFile);
         fullnameOverride: 'argocd',
         configs: {
           cm: {
+            url: 'https://argo-cd.asgard.sykloid.org',
             'kustomize.buildOptions': '--enable-helm',
+            'oidc.config': std.manifestYamlDoc({
+              name: 'Asgard SSO',
+              issuer: 'https://pocket-id.asgard.sykloid.org',
+              clientID: '8edb1c71-7e56-44b3-b48e-8adb3011987f',
+              enablePKCEAuthentication: true,
+            }),
           },
           params: {
             'server.insecure': true,
           },
+          rbac: {
+            "policy.csv": |||
+              g, admins, role:admin
+            |||
+          },
+        },
+        server: {
+          volumeMounts: [
+            {
+              name: "asgard-root-ca-bundle",
+              mountPath: "/etc/ssl/certs",
+              readOnly: true
+            }
+          ],
+          volumes: [
+            {
+              name: "asgard-root-ca-bundle",
+              configMap: {
+                name: "asgard-root-ca-bundle",
+                items: [
+                  {
+                    key: "trust-bundle.pem",
+                    path: "asgard-root-ca-bundle.pem",
+                  }
+                ]
+              }
+            }
+          ]
         },
         repoServer: {
           containerSecurityContext: {
