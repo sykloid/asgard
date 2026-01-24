@@ -1,7 +1,5 @@
 directory: charts
 repositories:
-- name: stable
-  url: https://charts.helm.sh/stable
 - name: external-dns
   url: https://kubernetes-sigs.github.io/external-dns
 requires:
