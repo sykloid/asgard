@@ -59,6 +59,17 @@ local argoCD = import 'asgard/argo-cd.libsonnet';
     synologyCSI: argoCD.application.new('synology-csi'),
     pihole: argoCD.application.new('pihole'),
     externalDNS: argoCD.application.new('external-dns'),
-    pocketID: argoCD.application.new('pocket-id'),
+    pocketID: argoCD.application.new('pocket-id') +
+              argoCD.application.withSyncOptions(['ServerSideApply=true']) +
+              argoCD.application.withIgnoreDifferences([
+                {
+                  group: 'apps',
+                  kind: 'StatefulSet',
+                  name: 'pocket-id',
+                  jsonPointers: [
+                    '/spec/updateStrategy/rollingUpdate/maxUnavailable',
+                  ],
+                },
+              ]),
   },
 }
