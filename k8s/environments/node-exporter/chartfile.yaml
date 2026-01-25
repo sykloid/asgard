@@ -1,0 +1,8 @@
+directory: charts
+repositories:
+- name: prometheus-community
+  url: https://prometheus-community.github.io/helm-charts
+requires:
+- chart: prometheus-community/prometheus-node-exporter
+  version: 4.51.0
+version: 1

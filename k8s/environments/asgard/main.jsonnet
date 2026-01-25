@@ -59,6 +59,7 @@ local argoCD = import 'asgard/argo-cd.libsonnet';
     synologyCSI: argoCD.application.new('synology-csi'),
     pihole: argoCD.application.new('pihole'),
     externalDNS: argoCD.application.new('external-dns'),
+    nodeExporter: argoCD.application.new('node-exporter'),
     pocketID: argoCD.application.new('pocket-id') +
               argoCD.application.withSyncOptions(['ServerSideApply=true']) +
               argoCD.application.withIgnoreDifferences([
