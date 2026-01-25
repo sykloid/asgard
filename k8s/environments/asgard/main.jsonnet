@@ -60,6 +60,7 @@ local argoCD = import 'asgard/argo-cd.libsonnet';
     pihole: argoCD.application.new('pihole'),
     externalDNS: argoCD.application.new('external-dns'),
     nodeExporter: argoCD.application.new('node-exporter'),
+    monitoring: argoCD.application.new('monitoring'),
     pocketID: argoCD.application.new('pocket-id') +
               argoCD.application.withSyncOptions(['ServerSideApply=true']) +
               argoCD.application.withIgnoreDifferences([
