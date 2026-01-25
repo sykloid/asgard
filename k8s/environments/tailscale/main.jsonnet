@@ -19,7 +19,7 @@ local es = import 'asgard/external-secrets.libsonnet';
   },
   data: {
     namespace: k.core.v1.namespace.new($.spec.namespace) + k.core.v1.namespace.metadata.withLabels({
-      "pod-security.kubernetes.io/enforce": "privileged",
+      'pod-security.kubernetes.io/enforce': 'privileged',
     }),
     tailscaleOperator: helm.template('tailscale', 'charts/tailscale-operator', {
       namespace: 'tailscale',
@@ -38,7 +38,7 @@ local es = import 'asgard/external-secrets.libsonnet';
       },
     }),
     oauthSecret: es.new('operator-oauth')
-               + es.withSecret('client_id', 'tailscale-operator-client/username')
-               + es.withSecret('client_secret', 'tailscale-operator-client/credential')
+                 + es.withSecret('client_id', 'tailscale-operator-client/username')
+                 + es.withSecret('client_secret', 'tailscale-operator-client/credential'),
   },
 }

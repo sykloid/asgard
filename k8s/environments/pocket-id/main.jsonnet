@@ -28,7 +28,7 @@ local helm = tanka.helm.new(std.thisFile);
         config: {
           create: false,
           name: 'pocket-id',
-        }
+        },
       },
     }),
     pocketIDConfig: k.core.v1.configMap.new('pocket-id', {

@@ -39,33 +39,33 @@ local helm = tanka.helm.new(std.thisFile);
             'server.insecure': true,
           },
           rbac: {
-            "policy.csv": |||
+            'policy.csv': |||
               g, admins, role:admin
-            |||
+            |||,
           },
         },
         server: {
           volumeMounts: [
             {
-              name: "asgard-root-ca-bundle",
-              mountPath: "/etc/ssl/certs",
-              readOnly: true
-            }
+              name: 'asgard-root-ca-bundle',
+              mountPath: '/etc/ssl/certs',
+              readOnly: true,
+            },
           ],
           volumes: [
             {
-              name: "asgard-root-ca-bundle",
+              name: 'asgard-root-ca-bundle',
               configMap: {
-                name: "asgard-root-ca-bundle",
+                name: 'asgard-root-ca-bundle',
                 items: [
                   {
-                    key: "trust-bundle.pem",
-                    path: "asgard-root-ca-bundle.pem",
-                  }
-                ]
-              }
-            }
-          ]
+                    key: 'trust-bundle.pem',
+                    path: 'asgard-root-ca-bundle.pem',
+                  },
+                ],
+              },
+            },
+          ],
         },
         repoServer: {
           containerSecurityContext: {
