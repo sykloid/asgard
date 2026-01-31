@@ -75,7 +75,7 @@ local helm = tanka.helm.new(std.thisFile);
             {
               name: 'argocd-tanka-plugin',
               command: ['/var/run/argocd/argocd-cmp-server'],
-              image: 'ghcr.io/sykloid/asgard/argocd-tanka-plugin:1.4',
+              image: 'ghcr.io/sykloid/asgard/argocd-tanka-plugin:1.7',
               securityContext: {
                 runAsNonRoot: true,
                 runAsUser: 999,

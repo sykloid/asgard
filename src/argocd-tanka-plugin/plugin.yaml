@@ -6,6 +6,6 @@ metadata:
 spec:
   version: "1.0"
   init:
-    command: ["/init.nu"]
+    command: ["/init.sh"]
   generate:
-    command: ["/generate.nu"]
+    command: ["/generate.sh"]
