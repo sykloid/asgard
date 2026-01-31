@@ -1,4 +1,4 @@
 talos/outputs
-k8s/vendor
+vendor
 
-charts/
+**/charts/
