@@ -4,7 +4,7 @@ local argoCD = import 'asgard/argo-cd.libsonnet';
   apiVersion: 'tanka.dev/v1alpha1',
   kind: 'Environment',
   metadata: {
-    name: 'environments/asgard',
+    name: 'k8s/asgard',
   },
   spec: {
     namespace: 'argo-cd',

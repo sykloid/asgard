@@ -4,7 +4,7 @@ local k = import '1.33/main.libsonnet';
   apiVersion: 'tanka.dev/v1alpha1',
   kind: 'Environment',
   metadata: {
-    name: 'environments/monitoring',
+    name: 'k8s/monitoring',
   },
   spec: {
     namespace: 'monitoring',

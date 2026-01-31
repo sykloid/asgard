@@ -22,13 +22,13 @@
           {
             repoURL: 'https://github.com/sykloid/asgard.git',
             targetRevision: 'master',
-            path: 'k8s/',
+            path: '.',
             plugin: {
               name: 'argocd-tanka-plugin-1.0',
               env: [
                 {
                   name: 'TK_ENV',
-                  value: if env == null then name else env,
+                  value: if env == null then 'k8s/' + name else env,
                 },
               ],
             },

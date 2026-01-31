@@ -6,7 +6,7 @@ local helm = tanka.helm.new(std.thisFile);
   apiVersion: 'tanka.dev/v1alpha1',
   kind: 'Environment',
   metadata: {
-    name: 'environments/external-secrets',
+    name: 'k8s/external-secrets',
   },
   spec: {
     namespace: 'external-secrets',

@@ -6,7 +6,7 @@ local helm = tanka.helm.new(std.thisFile);
   apiVersion: 'tanka.dev/v1alpha1',
   kind: 'Environment',
   metadata: {
-    name: 'environments/pocket-id',
+    name: 'k8s/pocket-id',
   },
   spec: {
     namespace: 'pocket-id',

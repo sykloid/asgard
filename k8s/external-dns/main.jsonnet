@@ -7,7 +7,7 @@ local es = import 'asgard/external-secrets.libsonnet';
   apiVersion: 'tanka.dev/v1alpha1',
   kind: 'Environment',
   metadata: {
-    name: 'environments/external-dns',
+    name: 'k8s/external-dns',
   },
   spec: {
     namespace: 'external-dns',

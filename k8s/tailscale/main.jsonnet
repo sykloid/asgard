@@ -7,7 +7,7 @@ local es = import 'asgard/external-secrets.libsonnet';
   apiVersion: 'tanka.dev/v1alpha1',
   kind: 'Environment',
   metadata: {
-    name: 'environments/tailscale',
+    name: 'k8s/tailscale',
   },
   spec: {
     namespace: 'tailscale',

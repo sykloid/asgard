@@ -6,7 +6,7 @@ local helm = tanka.helm.new(std.thisFile);
   apiVersion: 'tanka.dev/v1alpha1',
   kind: 'Environment',
   metadata: {
-    name: 'environments/node-exporter',
+    name: 'k8s/node-exporter',
   },
   spec: {
     namespace: 'node-exporter',

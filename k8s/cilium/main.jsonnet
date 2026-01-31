@@ -5,7 +5,7 @@ local helm = tanka.helm.new(std.thisFile);
   apiVersion: 'tanka.dev/v1alpha1',
   kind: 'Environment',
   metadata: {
-    name: 'environments/cilium',
+    name: 'k8s/cilium',
   },
   spec: {
     namespace: 'kube-system',

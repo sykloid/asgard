@@ -10,7 +10,7 @@ local SC_NAME = 'yggdrasil-nfs';
   apiVersion: 'tanka.dev/v1alpha1',
   kind: 'Environment',
   metadata: {
-    name: 'environments/nfs-subdir-external-provisioner',
+    name: 'k8s/nfs-subdir-external-provisioner',
     namespace: 'environments/nfs-subdir-external-provisioner/main.jsonnet',
   },
   spec: {

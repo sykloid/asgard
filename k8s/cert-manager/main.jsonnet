@@ -6,7 +6,7 @@ local helm = tanka.helm.new(std.thisFile);
   apiVersion: 'tanka.dev/v1alpha1',
   kind: 'Environment',
   metadata: {
-    name: 'environments/cert-manager',
+    name: 'k8s/cert-manager',
   },
   spec: {
     namespace: 'cert-manager',
