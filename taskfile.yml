@@ -1,0 +1,165 @@
+version: '3'
+
+run: once
+
+vars:
+  CLUSTER_NAME: asgard
+  CLUSTER_ENDPOINT: https://192.168.1.16:6443
+  TALOS_VERSION: v1.11.5
+  BUILD_DIR: _build
+  NODES:
+    map:
+      talos-01:
+        hostname: talos-01.asgard.sykloid.org
+        disk: /dev/sdb
+      talos-02:
+        hostname: talos-02.asgard.sykloid.org
+        disk: /dev/nvme0n1
+      talos-03:
+        hostname: talos-03.asgard.sykloid.org
+        disk: /dev/nvme0n1
+
+tasks:
+  default:
+    desc: List available tasks.
+    cmds:
+      - task --list
+
+  clean:
+    desc: Remove all build artifacts.
+    cmds:
+      - rm -rf {{.BUILD_DIR}}
+
+  scaffolding:dirs:
+    desc: Create all build directories.
+    cmds:
+      - mkdir -p {{.BUILD_DIR}}/talos/{patches,configs}
+    status:
+      - test -d {{.BUILD_DIR}}/talos/patches
+      - test -d {{.BUILD_DIR}}/talos/configs
+    internal: true
+
+  talos:secrets:
+    desc: Fetch Talos secrets from 1Password.
+    deps:
+      - scaffolding:dirs
+    status:
+      - test -f {{.BUILD_DIR}}/talos/secrets.yml
+    cmds:
+      - >-
+        op read op://{{.CLUSTER_NAME}}/talos-secret/secrets.yml
+        > {{.BUILD_DIR}}/talos/secrets.yml
+
+  talos:talosconfig:
+    desc: Generate talosconfig with secrets.
+    deps:
+      - scaffolding:dirs
+      - talos:secrets
+    vars:
+      NODE_LIST: '{{keys .NODES | join " "}}'
+    sources:
+      - '{{.BUILD_DIR}}/talos/secrets.yml'
+    generates:
+      - '{{.BUILD_DIR}}/talos/talosconfig.yml'
+    cmds:
+      - >-
+        talosctl gen config
+        --with-secrets {{.BUILD_DIR}}/talos/secrets.yml
+        --talos-version {{.TALOS_VERSION}}
+        --output {{.BUILD_DIR}}/talos/talosconfig.yml
+        --output-types talosconfig
+        --force
+        {{.CLUSTER_NAME}}
+        {{.CLUSTER_ENDPOINT}}
+      - >-
+        TALOSCONFIG={{.BUILD_DIR}}/talos/talosconfig.yml
+        talosctl config endpoints {{.NODE_LIST}}
+      - >-
+        TALOSCONFIG={{.BUILD_DIR}}/talos/talosconfig.yml
+        talosctl config nodes {{.NODE_LIST}}
+
+  talos:kubeconfig:
+    desc: Pull kubeconfig from the first control-plane node.
+    deps:
+      - scaffolding:dirs
+      - talos:talosconfig
+    vars:
+      FIRST_NODE: '{{keys .NODES | first}}'
+    sources:
+      - '{{.BUILD_DIR}}/talos/talosconfig.yml'
+    generates:
+      - '{{.BUILD_DIR}}/talos/kubeconfig.yml'
+    cmds:
+      - >-
+        TALOSCONFIG={{.BUILD_DIR}}/talos/talosconfig.yml
+        talosctl -n {{.FIRST_NODE}} kubeconfig -
+        > {{.BUILD_DIR}}/talos/kubeconfig.yml
+
+  talos:configs:
+    desc: Generate all Talos configurations.
+    deps:
+      - talos:control-plane:configs
+      - talos:talosconfig
+
+  talos:control-plane:patches:*:
+    desc: Generate patch for a specific control-plane node.
+    deps:
+      - scaffolding:dirs
+    vars:
+      NODE_NAME: '{{index .MATCH 0}}'
+    sources:
+      - talos/control-plane/main.jsonnet
+      - talos/control-plane/spec.json
+    generates:
+      - '{{.BUILD_DIR}}/talos/patches/{{.NODE_NAME}}.yml'
+    cmds:
+      - >-
+        tk show --dangerous-allow-redirect
+        --tla-str hostname={{(index .NODES .NODE_NAME).hostname}}
+        --tla-str installDisk={{(index .NODES .NODE_NAME).disk}}
+        talos/control-plane
+        | yq 'del(.metadata) | (select(.kind == "MachineConfig") | del(.apiVersion, .kind)) // .'
+        > {{.BUILD_DIR}}/talos/patches/{{.NODE_NAME}}.yml
+
+  talos:control-plane:patches:
+    desc: Generate patches for all control-plane nodes.
+    deps:
+      - for:
+          var: NODES
+        task: talos:control-plane:patches:{{.KEY}}
+
+  talos:control-plane:configs:*:
+    desc: Generate config for a specific control-plane node.
+    deps:
+      - scaffolding:dirs
+      - talos:secrets
+      - talos:control-plane:patches:{{index .MATCH 0}}
+    vars:
+      NODE_NAME: '{{index .MATCH 0}}'
+    sources:
+      - talos/control-plane/main.jsonnet
+      - talos/control-plane/spec.json
+      - '{{.BUILD_DIR}}/talos/secrets.yml'
+      - '{{.BUILD_DIR}}/talos/patches/{{.NODE_NAME}}.yml'
+    generates:
+      - '{{.BUILD_DIR}}/talos/configs/{{.NODE_NAME}}.yml'
+    cmds:
+      - >-
+        talosctl gen config
+        --with-secrets {{.BUILD_DIR}}/talos/secrets.yml
+        --config-patch @{{.BUILD_DIR}}/talos/patches/{{.NODE_NAME}}.yml
+        --output-types controlplane
+        --output {{.BUILD_DIR}}/talos/configs/{{.NODE_NAME}}.yml
+        --talos-version {{.TALOS_VERSION}}
+        --with-docs=false
+        --with-examples=false
+        --force
+        {{.CLUSTER_NAME}}
+        {{.CLUSTER_ENDPOINT}}
+
+  talos:control-plane:configs:
+    desc: Generate configs for all control-plane nodes.
+    deps:
+      - for:
+          var: NODES
+        task: talos:control-plane:configs:{{.KEY}}
