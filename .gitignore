@@ -1,4 +1,4 @@
-talos/outputs
-vendor
+/_build/
+/vendor/
 
 **/charts/
