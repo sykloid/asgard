@@ -40,5 +40,99 @@ local es = import 'asgard/external-secrets.libsonnet';
     oauthSecret: es.new('operator-oauth')
                  + es.withSecret('client_id', 'tailscale-operator-client/username')
                  + es.withSecret('client_secret', 'tailscale-operator-client/credential'),
+
+    gatewayClass: {
+      apiVersion: 'gateway.networking.k8s.io/v1',
+      kind: 'GatewayClass',
+      metadata: {
+        name: 'tailscale-gateway-class',
+      },
+      spec: {
+        controllerName: 'io.cilium/gateway-controller',
+        parametersRef: {
+          group: 'cilium.io',
+          kind: 'CiliumGatewayClassConfig',
+          name: 'tailscale-gateway-config',
+          namespace: 'tailscale',
+        },
+      },
+    },
+
+    gatewayClassConfig: {
+      apiVersion: 'cilium.io/v2alpha1',
+      kind: 'CiliumGatewayClassConfig',
+      metadata: {
+        name: 'tailscale-gateway-config',
+        namespace: 'tailscale',
+      },
+      spec: {
+        service: {
+          type: 'LoadBalancer',
+          loadBalancerClass: 'tailscale',
+        },
+      },
+    },
+
+    wildcardCert: {
+      apiVersion: 'cert-manager.io/v1',
+      kind: 'Certificate',
+      metadata: {
+        name: 'asgard-sykloid-org-tls',
+        labels: {
+          'external-dns': 'enabled',
+        },
+      },
+      spec: {
+        issuerRef: {
+          name: 'asgard-root-ca-issuer',
+          kind: 'ClusterIssuer',
+          group: 'cert-manager.io',
+        },
+        dnsNames: ['*.asgard.sykloid.org'],
+        secretName: 'asgard-sykloid-org-tls',
+      },
+    },
+
+    gateway: {
+      apiVersion: 'gateway.networking.k8s.io/v1',
+      kind: 'Gateway',
+      metadata: {
+        name: 'tailscale-secure-gateway',
+        namespace: 'tailscale',
+        annotations: {
+          'cert-manager.io/cluster-issuer': 'asgard-root-ca-issuer',
+        },
+        labels: {
+          'external-dns': 'enabled',
+        },
+      },
+      spec: {
+        gatewayClassName: 'tailscale-gateway-class',
+        infrastructure: {
+          annotations: {
+            'tailscale.com/hostname': 'asgard-secure-gateway',
+          },
+        },
+        listeners: [
+          {
+            name: 'https',
+            protocol: 'HTTPS',
+            port: 443,
+            hostname: '*.asgard.sykloid.org',
+            allowedRoutes: {
+              namespaces: {
+                from: 'All',
+              },
+            },
+            tls: {
+              mode: 'Terminate',
+              certificateRefs: [
+                { name: 'asgard-sykloid-org-tls' },
+              ],
+            },
+          },
+        ],
+      },
+    },
   },
 }
