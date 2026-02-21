@@ -1,0 +1,8 @@
+directory: charts
+repositories:
+- name: victoria-metrics
+  url: https://victoriametrics.github.io/helm-charts/
+requires:
+- chart: victoria-metrics/victoria-metrics-operator
+  version: 0.57.0
+version: 1
