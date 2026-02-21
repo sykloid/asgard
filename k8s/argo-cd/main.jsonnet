@@ -95,5 +95,39 @@ local helm = tanka.helm.new(std.thisFile);
         },
       },
     }),
+
+    httpRoute: {
+      apiVersion: 'gateway.networking.k8s.io/v1',
+      kind: 'HTTPRoute',
+      metadata: {
+        name: 'argocd-route',
+      },
+      spec: {
+        parentRefs: [
+          {
+            group: 'gateway.networking.k8s.io',
+            kind: 'Gateway',
+            name: 'tailscale-secure-gateway',
+            namespace: 'tailscale',
+          },
+        ],
+        hostnames: ['argo-cd.asgard.sykloid.org'],
+        rules: [
+          {
+            matches: [
+              { path: { type: 'PathPrefix', value: '/' } },
+            ],
+            backendRefs: [
+              {
+                group: '',
+                kind: 'Service',
+                name: 'argocd-server',
+                port: 80,
+              },
+            ],
+          },
+        ],
+      },
+    },
   },
 }
