@@ -42,5 +42,39 @@ local helm = tanka.helm.new(std.thisFile);
                          'password',
                          'pihole-admin-password/password'
                        ),
+
+    httpRoute: {
+      apiVersion: 'gateway.networking.k8s.io/v1',
+      kind: 'HTTPRoute',
+      metadata: {
+        name: 'pihole-route',
+      },
+      spec: {
+        parentRefs: [
+          {
+            group: 'gateway.networking.k8s.io',
+            kind: 'Gateway',
+            name: 'tailscale-secure-gateway',
+            namespace: 'tailscale',
+          },
+        ],
+        hostnames: ['pihole.asgard.sykloid.org'],
+        rules: [
+          {
+            matches: [
+              { path: { type: 'PathPrefix', value: '/' } },
+            ],
+            backendRefs: [
+              {
+                group: '',
+                kind: 'Service',
+                name: 'pihole-web',
+                port: 80,
+              },
+            ],
+          },
+        ],
+      },
+    },
   },
 }
