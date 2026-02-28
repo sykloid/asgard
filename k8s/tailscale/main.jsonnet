@@ -127,7 +127,7 @@ local es = import 'asgard/external-secrets.libsonnet';
             tls: {
               mode: 'Terminate',
               certificateRefs: [
-                { name: 'asgard-sykloid-org-tls' },
+                { group: '', kind: 'Secret', name: 'asgard-sykloid-org-tls' },
               ],
             },
           },
