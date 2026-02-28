@@ -16,7 +16,9 @@ local helm = tanka.helm.new(std.thisFile);
     contextNames: ['admin@asgard'],
   },
   data: {
-    namespace: k.core.v1.namespace.new($.spec.namespace),
+    namespace: k.core.v1.namespace.new($.spec.namespace) + k.core.v1.namespace.metadata.withLabels({
+      'pod-security.kubernetes.io/enforce': 'privileged',
+    }),
     synologyCSI: helm.template('synology-csi', 'charts/synology-csi', {
       namespace: $.spec.namespace,
       values: {
