@@ -19,6 +19,7 @@ local helm = tanka.helm.new(std.thisFile);
         namespace: $.spec.namespace,
         values: {
           routingMode: 'native',
+          autoDirectNodeRoutes: true,
           kubeProxyReplacement: true,
           'socketLB.hostNamespaceOnly': true,
           hubble: {
