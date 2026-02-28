@@ -13,8 +13,10 @@
         kind: 'ClusterSecretStore',
         name: 'asgard-1password',
       },
+      refreshInterval: '1h',
       target: {
         creationPolicy: 'Owner',
+        deletionPolicy: 'Retain',
       },
       data: base.secretRefs,
     },
@@ -26,6 +28,9 @@
         secretKey: secretKey,
         remoteRef: {
           key: remoteKey,
+          conversionStrategy: 'Default',
+          decodingStrategy: 'None',
+          metadataPolicy: 'None',
         }
       }
     ]
