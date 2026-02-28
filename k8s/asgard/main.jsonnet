@@ -60,6 +60,7 @@ local argoCD = import 'asgard/argo-cd.libsonnet';
     externalDNS: argoCD.application.new('external-dns'),
     nodeExporter: argoCD.application.new('node-exporter'),
     monitoring: argoCD.application.new('monitoring'),
+    paperlessNgx: argoCD.application.new('paperless-ngx'),
     pocketID: argoCD.application.new('pocket-id') +
               argoCD.application.withIgnoreDifferences([
                 {
