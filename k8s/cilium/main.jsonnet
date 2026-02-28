@@ -63,6 +63,7 @@ local helm = tanka.helm.new(std.thisFile);
             },
             hostRoot: '/sys/fs/cgroup',
           },
+          ipv4NativeRoutingCIDR: '10.244.0.0/16',
           ipam: {
             mode: 'kubernetes',
           },
