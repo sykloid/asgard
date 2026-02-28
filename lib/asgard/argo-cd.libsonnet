@@ -8,7 +8,7 @@
     new: function(name, env=null, namespace=null, project='default') {
       local base = self,
       ignoreDifferences:: [],
-      syncOptions:: [],
+      syncOptions:: ['ServerSideDiff=true', 'ServerSideApply=true'],
 
       apiVersion: 'argoproj.io/v1alpha1',
       kind: 'Application',

@@ -52,8 +52,7 @@ local argoCD = import 'asgard/argo-cd.libsonnet';
       },
     ]),
     nfsProvisioner: argoCD.application.new('nfs-subdir-external-provisioner'),
-    externalSecrets: argoCD.application.new('external-secrets') +
-                     argoCD.application.withSyncOptions(['ServerSideApply=true']),
+    externalSecrets: argoCD.application.new('external-secrets'),
     certManager: argoCD.application.new('cert-manager'),
     tailscale: argoCD.application.new('tailscale'),
     synologyCSI: argoCD.application.new('synology-csi'),
@@ -62,7 +61,6 @@ local argoCD = import 'asgard/argo-cd.libsonnet';
     nodeExporter: argoCD.application.new('node-exporter'),
     monitoring: argoCD.application.new('monitoring'),
     pocketID: argoCD.application.new('pocket-id') +
-              argoCD.application.withSyncOptions(['ServerSideApply=true']) +
               argoCD.application.withIgnoreDifferences([
                 {
                   group: 'apps',
