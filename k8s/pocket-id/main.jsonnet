@@ -58,6 +58,7 @@ local helm = tanka.helm.new(std.thisFile);
                 kind: 'Service',
                 name: 'pocket-id',
                 port: 80,
+                weight: 1,
               },
             ],
           },

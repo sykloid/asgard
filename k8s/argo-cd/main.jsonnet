@@ -123,6 +123,7 @@ local helm = tanka.helm.new(std.thisFile);
                 kind: 'Service',
                 name: 'argocd-server',
                 port: 80,
+                weight: 1,
               },
             ],
           },
