@@ -61,6 +61,7 @@ local argoCD = import 'asgard/argo-cd.libsonnet';
     nodeExporter: argoCD.application.new('node-exporter'),
     monitoring: argoCD.application.new('monitoring'),
     paperlessNgx: argoCD.application.new('paperless-ngx'),
+    grafana: argoCD.application.new('grafana'),
     pocketID: argoCD.application.new('pocket-id') +
               argoCD.application.withIgnoreDifferences([
                 {
