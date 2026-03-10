@@ -1,0 +1,8 @@
+directory: charts
+repositories:
+- name: grafana
+  url: https://grafana.github.io/helm-charts
+requires:
+- chart: grafana/grafana
+  version: 10.4.3
+version: 1
