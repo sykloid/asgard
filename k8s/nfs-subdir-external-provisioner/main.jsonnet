@@ -23,7 +23,7 @@ local SC_NAME = 'yggdrasil-nfs';
   },
   data: {
     namespace: k.core.v1.namespace.new($.spec.namespace),
-    'nfs-subdir-external-provisioner-delete': helm.template('nfs-subdir-external-provisioner', 'charts/nfs-subdir-external-provisioner', {
+    'nfs-subdir-external-provisioner': helm.template('nfs-subdir-external-provisioner', 'charts/nfs-subdir-external-provisioner', {
       namespace: 'nfs-subdir-external-provisioner',
       values: {
         nfs: {
@@ -36,18 +36,19 @@ local SC_NAME = 'yggdrasil-nfs';
         },
       },
     }),
-    'nfs-subdir-external-provisioner-retain': helm.template('nfs-subdir-external-provisioner', 'charts/nfs-subdir-external-provisioner', {
-      namespace: 'nfs-subdir-external-provisioner',
-      values: {
-        nfs: {
-          server: NAS_IP,
-          path: NFS_SHARE_PATH,
-        },
-        storageClass: {
-          name: (SC_NAME + '-retain'),
-          reclaimPolicy: 'Retain',
-        },
+    retainStorageClass: {
+      apiVersion: 'storage.k8s.io/v1',
+      kind: 'StorageClass',
+      metadata: {
+        name: (SC_NAME + '-retain'),
       },
-    }),
+      provisioner: 'cluster.local/nfs-subdir-external-provisioner',
+      parameters: {
+        archiveOnDelete: 'true',
+      },
+      reclaimPolicy: 'Retain',
+      volumeBindingMode: 'Immediate',
+      allowVolumeExpansion: true,
+    },
   },
 }
