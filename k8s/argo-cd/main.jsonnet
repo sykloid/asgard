@@ -31,7 +31,7 @@ local helm = tanka.helm.new(std.thisFile);
             'oidc.config': std.manifestYamlDoc({
               name: 'Asgard SSO',
               issuer: 'https://pocket-id.asgard.sykloid.org',
-              clientID: '8edb1c71-7e56-44b3-b48e-8adb3011987f',
+              clientID: 'e35569b9-bc21-4459-aafc-bdd0cfac4554',
               enablePKCEAuthentication: true,
             }),
           },
@@ -123,6 +123,49 @@ local helm = tanka.helm.new(std.thisFile);
                 kind: 'Service',
                 name: 'argocd-server',
                 port: 80,
+                weight: 1,
+              },
+            ],
+          },
+        ],
+      },
+    },
+
+    grpcRoute: {
+      apiVersion: 'gateway.networking.k8s.io/v1',
+      kind: 'GRPCRoute',
+      metadata: {
+        name: 'argocd-grpc-route',
+      },
+      spec: {
+        parentRefs: [
+          {
+            group: 'gateway.networking.k8s.io',
+            kind: 'Gateway',
+            name: 'tailscale-secure-gateway',
+            namespace: 'tailscale',
+          },
+        ],
+        hostnames: ['argo-cd.asgard.sykloid.org'],
+        rules: [
+          {
+            matches: [
+              {
+                headers: [
+                  {
+                    name: 'Content-Type',
+                    type: 'RegularExpression',
+                    value: '^application/grpc.*$',
+                  },
+                ],
+              },
+            ],
+            backendRefs: [
+              {
+                group: '',
+                kind: 'Service',
+                name: 'argocd-server',
+                port: 443,
                 weight: 1,
               },
             ],
