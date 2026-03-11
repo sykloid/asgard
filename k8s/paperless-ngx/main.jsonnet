@@ -158,6 +158,7 @@ local volumeMount = k.core.v1.volumeMount;
                     volumeMount.new('ca-bundle', '/etc/ssl/certs', readOnly=true),
                   ]),
                 ])
+                + deploy.spec.strategy.withType('Recreate')
                 + deploy.spec.template.spec.withVolumes([
                   volume.fromPersistentVolumeClaim('data', 'paperless-ngx-data'),
                   volume.fromPersistentVolumeClaim('media', 'paperless-ngx-media'),

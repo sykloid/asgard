@@ -72,6 +72,7 @@ local volumeMount = k.core.v1.volumeMount;
         volumeMount.new('data', '/app/data'),
       ]),
     ])
+    + deploy.spec.strategy.withType('Recreate')
     + deploy.spec.template.spec.withVolumes([
       volume.fromPersistentVolumeClaim('data', 'pocket-id-data'),
     ]),
