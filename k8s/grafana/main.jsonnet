@@ -26,6 +26,9 @@ local helm = tanka.helm.new(std.thisFile);
       namespace: $.spec.namespace,
       values: {
         fullnameOverride: 'grafana',
+        deploymentStrategy: {
+          type: 'Recreate',
+        },
         admin: {
           existingSecret: 'grafana-secrets',
           passwordKey: 'admin-password',
