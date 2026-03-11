@@ -20,6 +20,7 @@ local helm = tanka.helm.new(std.thisFile);
 
     secrets:
       es.new('grafana-secrets')
+      + es.withSecret('admin-user', 'grafana-admin/username')
       + es.withSecret('admin-password', 'grafana-admin/password'),
 
     grafana: helm.template('grafana', 'charts/grafana', {
