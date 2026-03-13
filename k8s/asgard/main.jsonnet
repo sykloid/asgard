@@ -64,6 +64,7 @@ local argoCD = import 'asgard/argo-cd.libsonnet';
     snmpExporter: argoCD.application.new('snmp-exporter'),
     actualBudget: argoCD.application.new('actual-budget'),
     grafana: argoCD.application.new('grafana'),
+    argoWorkflows: argoCD.application.new('argo-workflows'),
     pocketID: argoCD.application.new('pocket-id') +
               argoCD.application.withIgnoreDifferences([
                 {
