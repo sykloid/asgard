@@ -44,7 +44,7 @@ local volumeMount = k.core.v1.volumeMount;
 
     config: k.core.v1.configMap.new('pocket-id', {
       APP_URL: 'https://pocket-id.asgard.sykloid.org',
-      ANALYTICS_DISABLED: 'false',
+      ANALYTICS_DISABLED: 'true',
       GEOLITE_DB_PATH: 'data/GeoLite2-City.mmdb',
       GEOLITE_DB_URL: 'https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=%s&suffix=tar.gz',
       HOST: '0.0.0.0',
