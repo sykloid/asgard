@@ -7,7 +7,6 @@ local helm = tanka.helm.new(std.thisFile);
   kind: 'Environment',
   metadata: {
     name: 'k8s/argo-cd',
-    namespace: 'environments/argo-cd/main.jsonnet',
   },
   spec: {
     contextNames: [

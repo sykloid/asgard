@@ -11,7 +11,6 @@ local SC_NAME = 'yggdrasil-nfs';
   kind: 'Environment',
   metadata: {
     name: 'k8s/nfs-subdir-external-provisioner',
-    namespace: 'environments/nfs-subdir-external-provisioner/main.jsonnet',
   },
   spec: {
     contextNames: [
@@ -24,7 +23,7 @@ local SC_NAME = 'yggdrasil-nfs';
   data: {
     namespace: k.core.v1.namespace.new($.spec.namespace),
     'nfs-subdir-external-provisioner': helm.template('nfs-subdir-external-provisioner', 'charts/nfs-subdir-external-provisioner', {
-      namespace: 'nfs-subdir-external-provisioner',
+      namespace: $.spec.namespace,
       values: {
         nfs: {
           server: NAS_IP,
