@@ -1,5 +1,6 @@
 local k = import '1.33/main.libsonnet';
 local es = import 'asgard/external-secrets.libsonnet';
+local httpRoute = import 'asgard/http-route.libsonnet';
 
 local container = k.core.v1.container;
 local containerPort = k.core.v1.containerPort;
@@ -172,41 +173,6 @@ local volumeMount = k.core.v1.volumeMount;
       servicePort.new(8000, 8000),
     ]),
 
-    // --- HTTPRoute ---
-
-    httpRoute: {
-      apiVersion: 'gateway.networking.k8s.io/v1',
-      kind: 'HTTPRoute',
-      metadata: {
-        name: 'paperless-ngx-route',
-      },
-      spec: {
-        parentRefs: [
-          {
-            group: 'gateway.networking.k8s.io',
-            kind: 'Gateway',
-            name: 'tailscale-secure-gateway',
-            namespace: 'tailscale',
-          },
-        ],
-        hostnames: ['paperless.asgard.sykloid.org'],
-        rules: [
-          {
-            matches: [
-              { path: { type: 'PathPrefix', value: '/' } },
-            ],
-            backendRefs: [
-              {
-                group: '',
-                kind: 'Service',
-                name: 'paperless-ngx',
-                port: 8000,
-                weight: 1,
-              },
-            ],
-          },
-        ],
-      },
-    },
+    httpRoute: httpRoute.new('paperless-ngx-route', 'paperless.asgard.sykloid.org', 'paperless-ngx', 8000),
   },
 }

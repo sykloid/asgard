@@ -1,5 +1,6 @@
 local k = import '1.33/main.libsonnet';
 local es = import 'asgard/external-secrets.libsonnet';
+local httpRoute = import 'asgard/http-route.libsonnet';
 local tanka = import 'github.com/grafana/jsonnet-libs/tanka-util/main.libsonnet';
 local helm = tanka.helm.new(std.thisFile);
 
@@ -140,39 +141,6 @@ local sa = k.core.v1.serviceAccount;
       ],
     },
 
-    httpRoute: {
-      apiVersion: 'gateway.networking.k8s.io/v1',
-      kind: 'HTTPRoute',
-      metadata: {
-        name: 'argo-workflows-route',
-      },
-      spec: {
-        parentRefs: [
-          {
-            group: 'gateway.networking.k8s.io',
-            kind: 'Gateway',
-            name: 'tailscale-secure-gateway',
-            namespace: 'tailscale',
-          },
-        ],
-        hostnames: ['argo-workflows.asgard.sykloid.org'],
-        rules: [
-          {
-            matches: [
-              { path: { type: 'PathPrefix', value: '/' } },
-            ],
-            backendRefs: [
-              {
-                group: '',
-                kind: 'Service',
-                name: 'argo-workflows-server',
-                port: 2746,
-                weight: 1,
-              },
-            ],
-          },
-        ],
-      },
-    },
+    httpRoute: httpRoute.new('argo-workflows-route', 'argo-workflows.asgard.sykloid.org', 'argo-workflows-server', 2746),
   },
 }

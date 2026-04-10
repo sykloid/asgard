@@ -1,4 +1,5 @@
 local k = import '1.33/main.libsonnet';
+local httpRoute = import 'asgard/http-route.libsonnet';
 local container = k.core.v1.container;
 local containerPort = k.core.v1.containerPort;
 local deploy = k.apps.v1.deployment;
@@ -49,41 +50,6 @@ local volumeMount = k.core.v1.volumeMount;
       servicePort.new(5006, 5006),
     ]),
 
-    // --- HTTPRoute ---
-
-    httpRoute: {
-      apiVersion: 'gateway.networking.k8s.io/v1',
-      kind: 'HTTPRoute',
-      metadata: {
-        name: 'actual-budget-route',
-      },
-      spec: {
-        parentRefs: [
-          {
-            group: 'gateway.networking.k8s.io',
-            kind: 'Gateway',
-            name: 'tailscale-secure-gateway',
-            namespace: 'tailscale',
-          },
-        ],
-        hostnames: ['actual-budget.asgard.sykloid.org'],
-        rules: [
-          {
-            matches: [
-              { path: { type: 'PathPrefix', value: '/' } },
-            ],
-            backendRefs: [
-              {
-                group: '',
-                kind: 'Service',
-                name: 'actual-budget',
-                port: 5006,
-                weight: 1,
-              },
-            ],
-          },
-        ],
-      },
-    },
+    httpRoute: httpRoute.new('actual-budget-route', 'actual-budget.asgard.sykloid.org', 'actual-budget', 5006),
   },
 }

@@ -1,5 +1,6 @@
 local k = import '1.33/main.libsonnet';
 local es = import 'asgard/external-secrets.libsonnet';
+local httpRoute = import 'asgard/http-route.libsonnet';
 
 local container = k.core.v1.container;
 local containerPort = k.core.v1.containerPort;
@@ -81,41 +82,6 @@ local volumeMount = k.core.v1.volumeMount;
       servicePort.new(80, 1411) + servicePort.withName('http'),
     ]),
 
-    // --- HTTPRoute ---
-
-    httpRoute: {
-      apiVersion: 'gateway.networking.k8s.io/v1',
-      kind: 'HTTPRoute',
-      metadata: {
-        name: 'pocket-id-route',
-      },
-      spec: {
-        parentRefs: [
-          {
-            group: 'gateway.networking.k8s.io',
-            kind: 'Gateway',
-            name: 'tailscale-secure-gateway',
-            namespace: 'tailscale',
-          },
-        ],
-        hostnames: ['pocket-id.asgard.sykloid.org'],
-        rules: [
-          {
-            matches: [
-              { path: { type: 'PathPrefix', value: '/' } },
-            ],
-            backendRefs: [
-              {
-                group: '',
-                kind: 'Service',
-                name: 'pocket-id',
-                port: 80,
-                weight: 1,
-              },
-            ],
-          },
-        ],
-      },
-    },
+    httpRoute: httpRoute.new('pocket-id-route', 'pocket-id.asgard.sykloid.org', 'pocket-id', 80),
   },
 }

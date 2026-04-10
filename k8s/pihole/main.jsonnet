@@ -1,5 +1,6 @@
 local k = import '1.33/main.libsonnet';
 local es = import 'asgard/external-secrets.libsonnet';
+local httpRoute = import 'asgard/http-route.libsonnet';
 local tanka = import 'github.com/grafana/jsonnet-libs/tanka-util/main.libsonnet';
 local helm = tanka.helm.new(std.thisFile);
 
@@ -43,39 +44,6 @@ local helm = tanka.helm.new(std.thisFile);
                          'pihole-admin-password/password'
                        ),
 
-    httpRoute: {
-      apiVersion: 'gateway.networking.k8s.io/v1',
-      kind: 'HTTPRoute',
-      metadata: {
-        name: 'pihole-route',
-      },
-      spec: {
-        parentRefs: [
-          {
-            group: 'gateway.networking.k8s.io',
-            kind: 'Gateway',
-            name: 'tailscale-secure-gateway',
-            namespace: 'tailscale',
-          },
-        ],
-        hostnames: ['pihole.asgard.sykloid.org'],
-        rules: [
-          {
-            matches: [
-              { path: { type: 'PathPrefix', value: '/' } },
-            ],
-            backendRefs: [
-              {
-                group: '',
-                kind: 'Service',
-                name: 'pihole-web',
-                port: 80,
-                weight: 1,
-              },
-            ],
-          },
-        ],
-      },
-    },
+    httpRoute: httpRoute.new('pihole-route', 'pihole.asgard.sykloid.org', 'pihole-web', 80),
   },
 }
