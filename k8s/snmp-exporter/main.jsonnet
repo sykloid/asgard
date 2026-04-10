@@ -36,7 +36,7 @@ local volumeMount = k.core.v1.volumeMount;
           kind: 'ClusterSecretStore',
           name: 'asgard-1password',
         },
-        refreshInterval: '1h',
+        refreshInterval: '24h',
         target: {
           creationPolicy: 'Owner',
           deletionPolicy: 'Retain',
