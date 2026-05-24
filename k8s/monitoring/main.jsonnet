@@ -73,6 +73,66 @@ local k = import '1.33/main.libsonnet';
       },
     },
 
+    vlSingle: {
+      apiVersion: 'operator.victoriametrics.com/v1',
+      kind: 'VLSingle',
+      metadata: {
+        name: 'asgard',
+        namespace: $.spec.namespace,
+      },
+      spec: {
+        retentionPeriod: '30d',
+        removePvcAfterDelete: false,
+        storage: {
+          storageClassName: 'yggdrasil-retain',
+          resources: {
+            requests: {
+              storage: '10Gi',
+            },
+          },
+        },
+        resources: {
+          requests: {
+            memory: '256Mi',
+            cpu: '100m',
+          },
+          limits: {
+            memory: '512Mi',
+            cpu: '250m',
+          },
+        },
+      },
+    },
+
+    vlAgent: {
+      apiVersion: 'operator.victoriametrics.com/v1',
+      kind: 'VLAgent',
+      metadata: {
+        name: 'asgard',
+        namespace: $.spec.namespace,
+      },
+      spec: {
+        kubernetesLogs: {
+          enable: true,
+        },
+        remoteWrite: [
+          {
+            url: 'http://vlsingle-asgard:9428/internal/insert',
+          },
+        ],
+        resources: {
+          requests: {
+            memory: '128Mi',
+            cpu: '50m',
+          },
+          limits: {
+            memory: '256Mi',
+            cpu: '100m',
+          },
+        },
+      },
+    },
+
     nodeExporterScrape: {
       apiVersion: 'operator.victoriametrics.com/v1beta1',
       kind: 'VMNodeScrape',
