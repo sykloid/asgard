@@ -19,7 +19,7 @@ function(hostname, installDisk) {
         ],
       },
       install: {
-        image: 'factory.talos.dev/metal-installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba:v1.11.5',
+        image: 'factory.talos.dev/metal-installer/c9078f9419961640c712a8bf2bb9174933dfcf1da383fd8ea2b7dc21493f8bac:v1.11.5',
         disk: installDisk,
       },
       sysctls: {
