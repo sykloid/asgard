@@ -101,6 +101,29 @@ tasks:
       - talos:control-plane:configs
       - talos:talosconfig
 
+  talos:verify-schematic:
+    desc: Verify the pinned installer image matches the declared schematic.
+    vars:
+      FIRST_NODE: '{{keys .NODES | first}}'
+    cmds:
+      - |
+        expected=$(curl -fsS -X POST --data-binary @talos/control-plane/schematic.yml \
+          https://factory.talos.dev/schematics \
+          | yq -r '"factory.talos.dev/metal-installer/" + .id + ":{{.TALOS_VERSION}}"')
+        actual=$(tk show --dangerous-allow-redirect \
+          --tla-str hostname={{(index .NODES .FIRST_NODE).hostname}} \
+          --tla-str installDisk={{(index .NODES .FIRST_NODE).disk}} \
+          talos/control-plane \
+          | yq 'select(.kind == "MachineConfig") | .machine.install.image')
+        if [ "$expected" = "$actual" ]; then
+          echo "OK: $actual"
+        else
+          echo "MISMATCH"
+          echo "  declared: $expected"
+          echo "  actual:   $actual"
+          exit 1
+        fi
+
   talos:control-plane:patches:*:
     desc: Generate patch for a specific control-plane node.
     deps:
