@@ -119,6 +119,8 @@ local volumeMount = k.core.v1.volumeMount;
                     PAPERLESS_TIME_ZONE: 'Etc/UTC',
                     REQUESTS_CA_BUNDLE: '/etc/ssl/certs/ca-certificates.crt',
                     PAPERLESS_APPS: 'allauth.socialaccount.providers.openid_connect',
+                    PAPERLESS_DISABLE_REGULAR_LOGIN: 'true',
+                    PAPERLESS_REDIRECT_LOGIN_TO_SSO: 'true',
                     PAPERLESS_SECRET_KEY: {
                       secretKeyRef: {
                         name: 'paperless-ngx-secrets',
