@@ -26,6 +26,7 @@ local helm = tanka.helm.new(std.thisFile);
         fullnameOverride: 'argocd',
         configs: {
           cm: {
+            'admin.enabled': 'false',
             url: 'https://argo-cd.asgard.sykloid.org',
             'kustomize.buildOptions': '--enable-helm',
             'oidc.config': std.manifestYamlDoc({
