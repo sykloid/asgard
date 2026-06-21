@@ -79,6 +79,10 @@ local helm = tanka.helm.new(std.thisFile);
           server: {
             root_url: 'https://grafana.asgard.sykloid.org',
           },
+          auth: {
+            disable_login_form: true,
+            oauth_auto_login: true,
+          },
           'auth.generic_oauth': {
             enabled: true,
             name: 'Asgard SSO',
