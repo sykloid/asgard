@@ -104,35 +104,6 @@ local k = import '1.33/main.libsonnet';
       },
     },
 
-    vlAgent: {
-      apiVersion: 'operator.victoriametrics.com/v1',
-      kind: 'VLAgent',
-      metadata: {
-        name: 'asgard',
-        namespace: $.spec.namespace,
-      },
-      spec: {
-        kubernetesLogs: {
-          enable: true,
-        },
-        remoteWrite: [
-          {
-            url: 'http://vlsingle-asgard:9428/internal/insert',
-          },
-        ],
-        resources: {
-          requests: {
-            memory: '128Mi',
-            cpu: '50m',
-          },
-          limits: {
-            memory: '256Mi',
-            cpu: '100m',
-          },
-        },
-      },
-    },
-
     nodeExporterScrape: {
       apiVersion: 'operator.victoriametrics.com/v1beta1',
       kind: 'VMNodeScrape',

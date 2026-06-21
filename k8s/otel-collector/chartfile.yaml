@@ -1,0 +1,8 @@
+directory: charts
+repositories:
+- name: open-telemetry
+  url: https://open-telemetry.github.io/opentelemetry-helm-charts
+requires:
+- chart: open-telemetry/opentelemetry-collector
+  version: 0.158.2
+version: 1
