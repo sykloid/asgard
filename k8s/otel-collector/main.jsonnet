@@ -64,8 +64,167 @@ local contribImage = { repository: 'otel/opentelemetry-collector-contrib' };
           // Drop the chart's default metrics/traces pipelines and their unused
           // components (null tells the chart to remove the key) so this
           // collector runs only the filelog -> VictoriaLogs logs pipeline.
-          receivers: { otlp: null, jaeger: null, zipkin: null, prometheus: null },
-          processors: { memory_limiter: null },
+          receivers: {
+            otlp: null,
+            jaeger: null,
+            zipkin: null,
+            prometheus: null,
+            // Extend the logsCollection preset's filelog operators: keep its
+            // container parser, then parse JSON-formatted log bodies into
+            // structured fields and set the record severity from the level.
+            // Plaintext lines fail the `if` guard and pass through untouched.
+            filelog: {
+              operators: [
+                { id: 'container-parser', type: 'container', max_log_size: 102400 },
+                {
+                  // Flatten the JSON body into attributes (-> VictoriaLogs
+                  // fields) and derive OTLP severity from the level, so
+                  // VictoriaLogs stores a real `severity` instead of
+                  // "Unspecified" and Grafana can stack the level histogram.
+                  type: 'json_parser',
+                  'if': 'body matches "^{.*}$"',
+                  parse_from: 'body',
+                  on_error: 'send_quiet',
+                  severity: {
+                    parse_from: 'attributes.level',
+                    mapping: {
+                      trace: 'trace',
+                      debug: 'debug',
+                      info: ['info', 'notice', 'information'],
+                      warn: ['warn', 'warning'],
+                      'error': ['error', 'err'],
+                      fatal: ['fatal', 'critical', 'panic', 'crit'],
+                    },
+                  },
+                },
+                // Use the structured message as the log body (_msg) instead of
+                // the raw JSON string. Apps that use `message` instead of `msg`
+                // would need an extra move; plaintext logs have neither and are
+                // left as-is.
+                { type: 'move', 'if': 'attributes.msg != nil', from: 'attributes.msg', to: 'body' },
+                // Level is now encoded in severity; drop the redundant field so
+                // Grafana does not render a duplicate "level" column
+                // (victorialogs-datasource#319).
+                { type: 'remove', 'if': 'attributes.level != nil', field: 'attributes.level' },
+                // logfmt branch (severity-only): non-JSON `key=value` logs that
+                // carry a level= (e.g. argo-cd's gRPC logger) reach here with
+                // the raw line still in body. Extract just the level into a
+                // scratch attribute, set severity from it, then drop the scratch
+                // -- body/_msg and other fields are left untouched (no flatten).
+                {
+                  // NB: `if` is an expr-lang expression, so `\s` would be an
+                  // invalid string escape here -- use a literal space (logfmt
+                  // fields are space-separated). The `regex` field below goes
+                  // straight to the regex engine, where `\w` is fine.
+                  type: 'regex_parser',
+                  'if': 'body matches "(^| )level="',
+                  regex: 'level="?(?P<level>\\w+)',
+                  parse_from: 'body',
+                  parse_to: 'attributes.lvltmp',
+                  on_error: 'send_quiet',
+                  severity: {
+                    parse_from: 'attributes.lvltmp.level',
+                    mapping: {
+                      trace: 'trace',
+                      debug: 'debug',
+                      info: ['info', 'notice', 'information'],
+                      warn: ['warn', 'warning'],
+                      'error': ['error', 'err'],
+                      fatal: ['fatal', 'critical', 'panic', 'crit'],
+                    },
+                  },
+                },
+                { type: 'remove', 'if': 'attributes.lvltmp != nil', field: 'attributes.lvltmp' },
+                // klog/glog branch (severity-only): Kubernetes components and CSI
+                // sidecars log "I0622 00:07:20.304314 1 file.go:1] msg" -- the
+                // level is the leading char I/W/E/F.
+                {
+                  type: 'regex_parser',
+                  'if': 'body matches "^[IWEF][0-9]{4} "',
+                  regex: '^(?P<level>[IWEF])',
+                  parse_from: 'body',
+                  parse_to: 'attributes.lvltmp',
+                  on_error: 'send_quiet',
+                  severity: {
+                    parse_from: 'attributes.lvltmp.level',
+                    mapping: { info: 'I', warn: 'W', 'error': 'E', fatal: 'F' },
+                  },
+                },
+                { type: 'remove', 'if': 'attributes.lvltmp != nil', field: 'attributes.lvltmp' },
+                // bracketed-level branch (severity-only): e.g. synology csi-plugin
+                // logs "<ts> [INFO] [file:line] msg" -- level in the first
+                // [BRACKET]. The `if` guard avoids `\[` (invalid expr-lang escape)
+                // via char classes; the regex field uses normal escaping.
+                {
+                  type: 'regex_parser',
+                  'if': 'body matches " [[][A-Z]+[]]"',
+                  regex: '\\[(?P<level>[A-Z]+)\\]',
+                  parse_from: 'body',
+                  parse_to: 'attributes.lvltmp',
+                  on_error: 'send_quiet',
+                  severity: {
+                    parse_from: 'attributes.lvltmp.level',
+                    mapping: {
+                      info: ['INFO', 'INFORMATION', 'NOTICE'],
+                      warn: ['WARN', 'WARNING'],
+                      'error': ['ERROR', 'ERR'],
+                      debug: 'DEBUG',
+                      trace: 'TRACE',
+                      fatal: ['FATAL', 'CRITICAL', 'CRIT', 'PANIC'],
+                    },
+                  },
+                },
+                { type: 'remove', 'if': 'attributes.lvltmp != nil', field: 'attributes.lvltmp' },
+                // Python logging branch (severity-only): home-assistant/paperless
+                // log "<date> HH:MM:SS.mmm LEVEL (thread) [logger] msg", often
+                // wrapped in ANSI color codes. Capture the level word between the
+                // timestamp and the " (thread)". The match is unanchored, so the
+                // leading ANSI escape is ignored; body is left intact.
+                {
+                  type: 'regex_parser',
+                  'if': 'body matches "[0-9]{2}:[0-9]{2}:[0-9]{2}[.,][0-9]+ [A-Z]+ [(]"',
+                  regex: '[0-9]{2}:[0-9]{2}:[0-9]{2}[.,][0-9]+ (?P<level>[A-Z]+) [(]',
+                  parse_from: 'body',
+                  parse_to: 'attributes.lvltmp',
+                  on_error: 'send_quiet',
+                  severity: {
+                    parse_from: 'attributes.lvltmp.level',
+                    mapping: {
+                      debug: 'DEBUG',
+                      info: ['INFO', 'INFORMATION'],
+                      warn: ['WARNING', 'WARN'],
+                      'error': ['ERROR', 'ERR'],
+                      fatal: ['CRITICAL', 'FATAL'],
+                    },
+                  },
+                },
+                { type: 'remove', 'if': 'attributes.lvltmp != nil', field: 'attributes.lvltmp' },
+              ],
+            },
+          },
+          processors: {
+            memory_limiter: null,
+            // Canonicalize severity_text from the OTLP severity_number that the
+            // per-format severity parsing sets, so VictoriaLogs stores a uniform
+            // `severity` (trace/debug/info/warn/error/critical) regardless of the
+            // source log format (json/logfmt/klog/bracketed) or original casing.
+            transform: {
+              error_mode: 'ignore',
+              log_statements: [
+                {
+                  context: 'log',
+                  statements: [
+                    'set(severity_text, "trace") where severity_number >= 1 and severity_number <= 4',
+                    'set(severity_text, "debug") where severity_number >= 5 and severity_number <= 8',
+                    'set(severity_text, "info") where severity_number >= 9 and severity_number <= 12',
+                    'set(severity_text, "warn") where severity_number >= 13 and severity_number <= 16',
+                    'set(severity_text, "error") where severity_number >= 17 and severity_number <= 20',
+                    'set(severity_text, "critical") where severity_number >= 21 and severity_number <= 24',
+                  ],
+                },
+              ],
+            },
+          },
           exporters: vlogsExporter { debug: null },
           service: {
             pipelines: {
@@ -73,7 +232,7 @@ local contribImage = { repository: 'otel/opentelemetry-collector-contrib' };
               traces: null,
               logs: {
                 receivers: ['filelog'],
-                processors: ['k8sattributes', 'batch'],
+                processors: ['k8sattributes', 'transform', 'batch'],
                 exporters: ['otlphttp/vlogs'],
               },
             },
@@ -103,7 +262,32 @@ local contribImage = { repository: 'otel/opentelemetry-collector-contrib' };
           // components (null tells the chart to remove the key) so this
           // collector runs only the k8sobjects -> VictoriaLogs logs pipeline.
           receivers: { otlp: null, jaeger: null, zipkin: null, prometheus: null },
-          processors: { memory_limiter: null },
+          processors: {
+            memory_limiter: null,
+            // k8sobjects emits each event as a structured body ({type, object:{...}})
+            // with no log message, so VictoriaLogs shows a "missing _msg field"
+            // placeholder. Lift the event object's fields up to attributes (so
+            // they survive as queryable fields) and use the event note (falling
+            // back to reason) as the log message body.
+            transform: {
+              error_mode: 'ignore',
+              log_statements: [
+                {
+                  context: 'log',
+                  statements: [
+                    'merge_maps(attributes, body["object"], "upsert") where body["object"] != nil',
+                    // Derive severity from the k8s event type. Set severity_text
+                    // directly to the canonical value (the events collector has no
+                    // severity_number canonicalize transform like the logs one).
+                    'set(severity_text, "warn") where attributes["type"] == "Warning"',
+                    'set(severity_text, "info") where attributes["type"] == "Normal"',
+                    'set(body, attributes["note"]) where attributes["note"] != nil',
+                    'set(body, attributes["reason"]) where attributes["note"] == nil and attributes["reason"] != nil',
+                  ],
+                },
+              ],
+            },
+          },
           exporters: vlogsExporter { debug: null },
           service: {
             pipelines: {
@@ -111,7 +295,7 @@ local contribImage = { repository: 'otel/opentelemetry-collector-contrib' };
               traces: null,
               logs: {
                 receivers: ['k8sobjects'],
-                processors: ['batch'],
+                processors: ['transform', 'batch'],
                 exporters: ['otlphttp/vlogs'],
               },
             },
