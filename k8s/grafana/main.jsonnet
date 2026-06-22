@@ -42,6 +42,9 @@ local helm = tanka.helm.new(std.thisFile);
           storageClassName: 'yggdrasil-iscsi-retain',
           size: '1Gi',
         },
+        // VictoriaLogs datasource (logs + k8s events live in the same vlsingle
+        // instance) requires its signed plugin from the Grafana catalog.
+        plugins: ['victoriametrics-logs-datasource'],
         datasources: {
           'datasources.yaml': {
             apiVersion: 1,
@@ -52,6 +55,33 @@ local helm = tanka.helm.new(std.thisFile);
                 access: 'proxy',
                 url: 'http://vmsingle-asgard.monitoring:8428',
                 isDefault: true,
+              },
+              {
+                name: 'VictoriaLogs',
+                type: 'victoriametrics-logs-datasource',
+                access: 'proxy',
+                url: 'http://vlsingle-asgard.monitoring:9428',
+                jsonData: {
+                  // Map the OTLP `severity` field (set by the otel-collector's
+                  // severity parsing) to Grafana log levels so the logs
+                  // histogram stacks by level instead of showing "unknown".
+                  // This is the provisioning equivalent of the datasource's
+                  // "OpenTelemetry preset" (a UI-only toggle). Case-insensitive
+                  // regex also folds e.g. INFO and info into one level. First
+                  // matching rule wins; values that match nothing (e.g.
+                  // "Unspecified" plaintext) stay unknown, which is correct.
+                  // The otel-collector canonicalizes `severity` to a fixed set
+                  // (trace/debug/info/warn/error/critical) regardless of source
+                  // log format, so these are simple exact matches.
+                  logLevelRules: [
+                    { field: 'severity', operator: 'equals', value: 'critical', level: 'critical', enabled: true },
+                    { field: 'severity', operator: 'equals', value: 'error', level: 'error', enabled: true },
+                    { field: 'severity', operator: 'equals', value: 'warn', level: 'warning', enabled: true },
+                    { field: 'severity', operator: 'equals', value: 'info', level: 'info', enabled: true },
+                    { field: 'severity', operator: 'equals', value: 'debug', level: 'debug', enabled: true },
+                    { field: 'severity', operator: 'equals', value: 'trace', level: 'trace', enabled: true },
+                  ],
+                },
               },
             ],
           },
