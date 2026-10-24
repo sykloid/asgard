@@ -5,7 +5,10 @@ run: once
 vars:
   CLUSTER_NAME: asgard
   CLUSTER_ENDPOINT: https://192.168.1.16:6443
-  TALOS_VERSION: v1.11.5
+  TALOS_VERSION: v1.14.2
+  # Machine config contract for `gen config`; held back until the multi-doc rewrite.
+  TALOS_CONFIG_VERSION: v1.11.5
+  KUBERNETES_VERSION: 1.35.9
   BUILD_DIR: _build
   NODES:
     map:
@@ -65,7 +68,7 @@ tasks:
       - >-
         talosctl gen config
         --with-secrets {{.BUILD_DIR}}/talos/secrets.yml
-        --talos-version {{.TALOS_VERSION}}
+        --talos-version {{.TALOS_CONFIG_VERSION}}
         --output {{.BUILD_DIR}}/talos/talosconfig.yml
         --output-types talosconfig
         --force
@@ -173,7 +176,8 @@ tasks:
         --config-patch @{{.BUILD_DIR}}/talos/patches/{{.NODE_NAME}}.yml
         --output-types controlplane
         --output {{.BUILD_DIR}}/talos/configs/{{.NODE_NAME}}.yml
-        --talos-version {{.TALOS_VERSION}}
+        --talos-version {{.TALOS_CONFIG_VERSION}}
+        --kubernetes-version {{.KUBERNETES_VERSION}}
         --with-docs=false
         --with-examples=false
         --force

@@ -19,7 +19,7 @@ function(hostname, installDisk) {
         ],
       },
       install: {
-        image: 'factory.talos.dev/metal-installer/c9078f9419961640c712a8bf2bb9174933dfcf1da383fd8ea2b7dc21493f8bac:v1.11.5',
+        image: 'factory.talos.dev/metal-installer/c9078f9419961640c712a8bf2bb9174933dfcf1da383fd8ea2b7dc21493f8bac:v1.14.2',
         disk: installDisk,
       },
       sysctls: {
@@ -29,7 +29,6 @@ function(hostname, installDisk) {
         extraConfig: {
           featureGates: {
             UserNamespacesSupport: true,
-            UserNamespacesPodSecurityStandards: true,
           },
         },
       },
@@ -38,7 +37,7 @@ function(hostname, installDisk) {
       allowSchedulingOnControlPlanes: true,
       apiServer: {
         extraArgs: {
-          'feature-gates': 'UserNamespacesSupport=true,UserNamespacesPodSecurityStandards=true',
+          'feature-gates': 'UserNamespacesSupport=true',
         },
       },
       discovery: {
