@@ -24,6 +24,16 @@ local helm = tanka.helm.new(std.thisFile);
           'socketLB.hostNamespaceOnly': true,
           hubble: {
             enabled: true,
+            tls: {
+              auto: {
+                method: 'certmanager',
+                certManagerIssuerRef: {
+                  group: 'cert-manager.io',
+                  kind: 'ClusterIssuer',
+                  name: 'asgard-root-ca-issuer',
+                },
+              },
+            },
             ui: {
               enabled: true,
             },

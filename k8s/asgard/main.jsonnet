@@ -16,41 +16,7 @@ local argoCD = import 'asgard/argo-cd.libsonnet';
   },
   data: {
     argoCD: argoCD.application.new('argo-cd'),
-    cilium: argoCD.application.new('cilium', namespace='kube-system') + argoCD.application.withIgnoreDifferences([
-      {
-        jsonPointers: [
-          '/data/ca.crt',
-        ],
-        kind: 'ConfigMap',
-        name: 'hubble-ca-cert',
-      },
-      {
-        jsonPointers: [
-          '/data/ca.crt',
-          '/data/ca.key',
-        ],
-        kind: 'Secret',
-        name: 'cilium-ca',
-      },
-      {
-        jsonPointers: [
-          '/data/ca.crt',
-          '/data/tls.crt',
-          '/data/tls.key',
-        ],
-        kind: 'Secret',
-        name: 'hubble-relay-client-certs',
-      },
-      {
-        jsonPointers: [
-          '/data/ca.crt',
-          '/data/tls.crt',
-          '/data/tls.key',
-        ],
-        kind: 'Secret',
-        name: 'hubble-server-certs',
-      },
-    ]),
+    cilium: argoCD.application.new('cilium', namespace='kube-system'),
     nfsProvisioner: argoCD.application.new('nfs-subdir-external-provisioner'),
     externalSecrets: argoCD.application.new('external-secrets'),
     certManager: argoCD.application.new('cert-manager'),
