@@ -53,4 +53,18 @@ function(hostname, installDisk) {
       },
     },
   },
+  // In-cluster OIDC clients need to resolve Pocket ID, whose record only exists
+  // in pihole. Points at the tailscale-secure-gateway address that external-dns
+  // publishes; cilium routes it in-cluster.
+  pocketIDHost: {
+    apiVersion: 'v1alpha1',
+    kind: 'StaticHostConfig',
+    metadata: {
+      name: 'pocket-id',
+    },
+    name: '100.125.239.39',
+    hostnames: [
+      'pocket-id.asgard.sykloid.org',
+    ],
+  },
 }
