@@ -18,6 +18,8 @@ local helm = tanka.helm.new(std.thisFile);
       'cilium', 'charts/cilium', {
         namespace: $.spec.namespace,
         values: {
+          // Version originally installed; keeps defaults stable across upgrades.
+          upgradeCompatibility: '1.18',
           routingMode: 'native',
           autoDirectNodeRoutes: true,
           kubeProxyReplacement: true,
