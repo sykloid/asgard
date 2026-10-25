@@ -47,6 +47,10 @@ local helm = tanka.helm.new(std.thisFile);
             |||,
           },
         },
+        // SSO goes straight to pocket-id via oidc.config; Dex is unused.
+        dex: {
+          enabled: false,
+        },
         server: {
           volumeMounts: [
             {
