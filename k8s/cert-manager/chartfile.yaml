@@ -6,5 +6,5 @@ requires:
 - chart: jetstack/cert-manager
   version: v1.21.3
 - chart: jetstack/trust-manager
-  version: 0.20.3
+  version: v0.25.0
 version: 1
