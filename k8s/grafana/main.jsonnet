@@ -30,6 +30,9 @@ local helm = tanka.helm.new(std.thisFile);
       namespace: $.spec.namespace,
       values: {
         fullnameOverride: 'grafana',
+        testFramework: {
+          enabled: false,
+        },
         deploymentStrategy: {
           type: 'Recreate',
         },

@@ -38,6 +38,10 @@ local helm = tanka.helm.new(std.thisFile);
         crds: {
           enabled: false,
         },
+        // Zone labels for topology-aware routing; single-zone cluster.
+        topologyInjector: {
+          enabled: false,
+        },
       },
     }),
   },

@@ -37,7 +37,10 @@ local helm = tanka.helm.new(std.thisFile);
           FTLCONF_dns_listeningMode: 'all',
         },
       },
-    }),
+    }) + {
+      // Helm test hook; the chart has no toggle for it.
+      pod_pihole_smoke_test:: super.pod_pihole_smoke_test,
+    },
     piholeCredentials: es.new('pihole-credentials') +
                        es.withSecret(
                          'password',

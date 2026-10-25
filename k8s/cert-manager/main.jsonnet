@@ -35,6 +35,9 @@ local es = import 'asgard/external-secrets.libsonnet';
         podDisruptionBudget: {
           enabled: true,
         },
+        startupapicheck: {
+          enabled: false,
+        },
       },
     }),
 
