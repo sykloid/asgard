@@ -1,0 +1,8 @@
+directory: charts
+repositories:
+- name: dra-driver-nvidia
+  url: oci://registry.k8s.io/dra-driver-nvidia/charts
+requires:
+- chart: dra-driver-nvidia/dra-driver-nvidia-gpu
+  version: 0.5.1
+version: 1

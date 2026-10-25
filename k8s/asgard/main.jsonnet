@@ -28,6 +28,7 @@ local argoCD = import 'asgard/argo-cd.libsonnet';
     nodeExporter: argoCD.application.new('node-exporter'),
     monitoring: argoCD.application.new('monitoring'),
     victoriaMetrics: argoCD.application.new('victoria-metrics'),
+    draDriverNvidiaGPU: argoCD.application.new('dra-driver-nvidia-gpu'),
     otelCollector: argoCD.application.new('otel-collector'),
     paperlessNgx: argoCD.application.new('paperless-ngx'),
     snmpExporter: argoCD.application.new('snmp-exporter'),

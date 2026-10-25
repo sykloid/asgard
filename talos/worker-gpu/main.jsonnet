@@ -34,6 +34,10 @@ function(hostname, installDisk) {
           { name: 'nvidia_modeset' },
         ],
       },
+      // Lets the NVIDIA DRA kubelet plugin schedule here (k8s/dra-driver-nvidia-gpu).
+      nodeLabels: {
+        'nvidia.com/gpu.present': 'true',
+      },
       // Only applied when the node first registers; later changes need kubectl taint.
       nodeTaints: {
         'nvidia.com/gpu': 'present:NoSchedule',
