@@ -53,6 +53,7 @@ function(hostname, installDisk) {
     cluster: common.cluster,
   },
   pocketIDHost: common.pocketIDHost,
+  kmsgLog: common.kmsgLog,
   // Both sizes are fixed when the partitions are first created; changing them
   // later means wiping EPHEMERAL / the volume.
   ephemeralVolume: {

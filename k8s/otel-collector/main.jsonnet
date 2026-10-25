@@ -20,6 +20,64 @@ local vlogsExporter = {
 // are not in the core collector image.
 local contribImage = { repository: 'otel/opentelemetry-collector-contrib' };
 
+// Level-name -> OTLP severity mapping shared by the stanza severity parsers.
+local severityMapping = {
+  trace: 'trace',
+  debug: 'debug',
+  info: ['info', 'notice', 'information'],
+  warn: ['warn', 'warning'],
+  'error': ['error', 'err'],
+  fatal: ['fatal', 'critical', 'panic', 'crit'],
+};
+
+// Canonicalize severity_text from the OTLP severity_number that the
+// per-format severity parsing sets, so VictoriaLogs stores a uniform
+// `severity` (trace/debug/info/warn/error/critical) regardless of the
+// source log format (json/logfmt/klog/bracketed) or original casing.
+local severityTransform = {
+  error_mode: 'ignore',
+  log_statements: [
+    {
+      context: 'log',
+      statements: [
+        'set(severity_text, "trace") where severity_number >= 1 and severity_number <= 4',
+        'set(severity_text, "debug") where severity_number >= 5 and severity_number <= 8',
+        'set(severity_text, "info") where severity_number >= 9 and severity_number <= 12',
+        'set(severity_text, "warn") where severity_number >= 13 and severity_number <= 16',
+        'set(severity_text, "error") where severity_number >= 17 and severity_number <= 20',
+        'set(severity_text, "critical") where severity_number >= 21 and severity_number <= 24',
+      ],
+    },
+  ],
+};
+
+// Talos ships machined/kubelet/etcd/etc. service logs and the kernel log as
+// JSON lines over TCP (machine.logging + KmsgLogConfig in
+// lib/asgard/talos.libsonnet) to these ports on otel-logs-agent.
+local talosServiceLogsPort = 5170;
+local talosKernelLogsPort = 5171;
+
+// Parse one Talos JSON line: fields to attributes, talos-time/talos-level to
+// timestamp/severity, msg to the body.
+local talosOperators = [
+  {
+    type: 'json_parser',
+    parse_from: 'body',
+    timestamp: {
+      parse_from: 'attributes["talos-time"]',
+      layout_type: 'gotime',
+      layout: '2006-01-02T15:04:05.999999999Z07:00',
+    },
+    severity: {
+      parse_from: 'attributes["talos-level"]',
+      mapping: severityMapping,
+    },
+  },
+  { type: 'move', 'if': 'attributes.msg != nil', from: 'attributes.msg', to: 'body' },
+  { type: 'remove', field: 'attributes["talos-time"]' },
+  { type: 'remove', field: 'attributes["talos-level"]' },
+];
+
 // Two-tier collector layout per the OpenTelemetry Kubernetes docs:
 //   - DaemonSet (agent) for node-local data  -> filelog (container logs)
 //   - single Deployment replica for cluster-wide data -> k8sobjects (events)
@@ -54,6 +112,21 @@ local contribImage = { repository: 'otel/opentelemetry-collector-contrib' };
         fullnameOverride: 'otel-logs',
         mode: 'daemonset',
         image: contribImage,
+        // Host network so Talos can reach the talos-* receivers on 127.0.0.1.
+        hostNetwork: true,
+        dnsPolicy: 'ClusterFirstWithHostNet',
+        // Every node, whatever its taints, so node problems are visible.
+        tolerations: [{ operator: 'Exists' }],
+        // Nothing serves the chart's default ports (those receivers are removed
+        // below); don't reserve them on the host.
+        ports: {
+          otlp: { enabled: false },
+          'otlp-http': { enabled: false },
+          'jaeger-compact': { enabled: false },
+          'jaeger-thrift': { enabled: false },
+          'jaeger-grpc': { enabled: false },
+          zipkin: { enabled: false },
+        },
         presets: {
           logsCollection: { enabled: true, includeCollectorLogs: false },
           // Enrich each record with k8s.namespace.name / k8s.pod.name /
@@ -69,6 +142,21 @@ local contribImage = { repository: 'otel/opentelemetry-collector-contrib' };
             jaeger: null,
             zipkin: null,
             prometheus: null,
+            'tcplog/talos-services': {
+              listen_address: '127.0.0.1:%d' % talosServiceLogsPort,
+              operators: talosOperators + [
+                // On connect Talos also replays the kernel buffer here, as
+                // pre-formatted text stamped with the send time; the kernel
+                // receiver below already carries it with real timestamps.
+                { type: 'filter', expr: 'attributes["talos-service"] == "kernel"' },
+              ],
+            },
+            'tcplog/talos-kernel': {
+              listen_address: '127.0.0.1:%d' % talosKernelLogsPort,
+              operators: talosOperators + [
+                { type: 'add', field: 'attributes["talos-service"]', value: 'kernel' },
+              ],
+            },
             // Extend the logsCollection preset's filelog operators: keep its
             // container parser, then parse JSON-formatted log bodies into
             // structured fields and set the record severity from the level.
@@ -204,24 +292,14 @@ local contribImage = { repository: 'otel/opentelemetry-collector-contrib' };
           },
           processors: {
             memory_limiter: null,
-            // Canonicalize severity_text from the OTLP severity_number that the
-            // per-format severity parsing sets, so VictoriaLogs stores a uniform
-            // `severity` (trace/debug/info/warn/error/critical) regardless of the
-            // source log format (json/logfmt/klog/bracketed) or original casing.
-            transform: {
-              error_mode: 'ignore',
-              log_statements: [
-                {
-                  context: 'log',
-                  statements: [
-                    'set(severity_text, "trace") where severity_number >= 1 and severity_number <= 4',
-                    'set(severity_text, "debug") where severity_number >= 5 and severity_number <= 8',
-                    'set(severity_text, "info") where severity_number >= 9 and severity_number <= 12',
-                    'set(severity_text, "warn") where severity_number >= 13 and severity_number <= 16',
-                    'set(severity_text, "error") where severity_number >= 17 and severity_number <= 20',
-                    'set(severity_text, "critical") where severity_number >= 21 and severity_number <= 24',
-                  ],
-                },
+            transform: severityTransform,
+            // Promote talos-service to a resource attribute so each Talos
+            // service is its own VictoriaLogs stream.
+            groupbyattrs: { keys: ['talos-service'] },
+            'resource/node': {
+              attributes: [
+                // OTEL_K8S_NODE_NAME is injected by the chart from spec.nodeName.
+                { key: 'k8s.node.name', value: '${env:OTEL_K8S_NODE_NAME}', action: 'upsert' },
               ],
             },
           },
@@ -233,6 +311,12 @@ local contribImage = { repository: 'otel/opentelemetry-collector-contrib' };
               logs: {
                 receivers: ['filelog'],
                 processors: ['k8sattributes', 'transform', 'batch'],
+                exporters: ['otlphttp/vlogs'],
+              },
+              // Talos host logs carry no pod, so they skip k8sattributes.
+              'logs/talos': {
+                receivers: ['tcplog/talos-services', 'tcplog/talos-kernel'],
+                processors: ['transform', 'groupbyattrs', 'resource/node', 'batch'],
                 exporters: ['otlphttp/vlogs'],
               },
             },

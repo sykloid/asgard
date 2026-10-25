@@ -30,4 +30,5 @@ function(hostname, installDisk) {
     },
   },
   pocketIDHost: common.pocketIDHost,
+  kmsgLog: common.kmsgLog,
 }
