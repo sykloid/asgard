@@ -22,6 +22,16 @@ local helm = tanka.helm.new(std.thisFile);
       namespace: $.spec.namespace,
       values: {
         fullnameOverride: 'victoria-metrics-operator',
+        admissionWebhooks: {
+          certManager: {
+            enabled: true,
+            issuer: {
+              group: 'cert-manager.io',
+              kind: 'ClusterIssuer',
+              name: 'asgard-root-ca-issuer',
+            },
+          },
+        },
       },
     }),
   },

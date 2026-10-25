@@ -27,6 +27,7 @@ local argoCD = import 'asgard/argo-cd.libsonnet';
     externalDNS: argoCD.application.new('external-dns'),
     nodeExporter: argoCD.application.new('node-exporter'),
     monitoring: argoCD.application.new('monitoring'),
+    victoriaMetrics: argoCD.application.new('victoria-metrics'),
     otelCollector: argoCD.application.new('otel-collector'),
     paperlessNgx: argoCD.application.new('paperless-ngx'),
     snmpExporter: argoCD.application.new('snmp-exporter'),
