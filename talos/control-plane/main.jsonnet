@@ -25,21 +25,9 @@ function(hostname, installDisk) {
       sysctls: {
         'user.max_user_namespaces': '11255',
       },
-      kubelet: {
-        extraConfig: {
-          featureGates: {
-            UserNamespacesSupport: true,
-          },
-        },
-      },
     },
     cluster: {
       allowSchedulingOnControlPlanes: true,
-      apiServer: {
-        extraArgs: {
-          'feature-gates': 'UserNamespacesSupport=true',
-        },
-      },
       discovery: {
         enabled: false,
       },
