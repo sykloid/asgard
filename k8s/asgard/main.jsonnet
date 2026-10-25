@@ -17,6 +17,7 @@ local argoCD = import 'asgard/argo-cd.libsonnet';
   data: {
     argoCD: argoCD.application.new('argo-cd'),
     cilium: argoCD.application.new('cilium', namespace='kube-system'),
+    envoyGateway: argoCD.application.new('envoy-gateway', namespace='envoy-gateway-system'),
     nfsProvisioner: argoCD.application.new('nfs-subdir-external-provisioner'),
     externalSecrets: argoCD.application.new('external-secrets'),
     certManager: argoCD.application.new('cert-manager'),

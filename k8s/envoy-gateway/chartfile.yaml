@@ -1,0 +1,10 @@
+directory: charts
+repositories:
+- name: envoyproxy
+  url: oci://docker.io/envoyproxy
+requires:
+- chart: envoyproxy/gateway-crds-helm
+  version: v1.9.2
+- chart: envoyproxy/gateway-helm
+  version: v1.9.2
+version: 1
