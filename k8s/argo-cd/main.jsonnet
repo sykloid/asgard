@@ -38,6 +38,8 @@ local helm = tanka.helm.new(std.thisFile);
           },
           params: {
             'server.insecure': true,
+            // Chart 9.0 dropped its 'sync' default; pin it so ApplicationSets can delete Applications.
+            'applicationsetcontroller.policy': 'sync',
           },
           rbac: {
             'policy.csv': |||
