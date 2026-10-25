@@ -24,7 +24,9 @@ local es = import 'asgard/external-secrets.libsonnet';
           enabled: true,
         },
         config: {
-          enableGatewayAPI: true,
+          gatewayAPI: {
+            enabled: true,
+          },
           featureGates: {
             NameConstraints: true,
           },
