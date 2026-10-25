@@ -21,6 +21,11 @@ vars:
       talos-03:
         hostname: talos-03.asgard.sykloid.org
         disk: /dev/nvme0n1
+  GPU_WORKERS:
+    map:
+      talos-04:
+        hostname: talos-04.asgard.sykloid.org
+        disk: /dev/nvme0n1
 
 tasks:
   default:
@@ -102,6 +107,7 @@ tasks:
     desc: Generate all Talos configurations.
     deps:
       - talos:control-plane:configs
+      - talos:worker-gpu:configs
       - talos:talosconfig
 
   talos:verify-schematic:
@@ -136,6 +142,7 @@ tasks:
     sources:
       - talos/control-plane/main.jsonnet
       - talos/control-plane/spec.json
+      - lib/asgard/talos.libsonnet
     generates:
       - '{{.BUILD_DIR}}/talos/patches/{{.NODE_NAME}}.yml'
     cmds:
@@ -165,6 +172,7 @@ tasks:
     sources:
       - talos/control-plane/main.jsonnet
       - talos/control-plane/spec.json
+      - lib/asgard/talos.libsonnet
       - '{{.BUILD_DIR}}/talos/secrets.yml'
       - '{{.BUILD_DIR}}/talos/patches/{{.NODE_NAME}}.yml'
     generates:
@@ -190,3 +198,69 @@ tasks:
       - for:
           var: NODES
         task: talos:control-plane:configs:{{.KEY}}
+
+  talos:worker-gpu:patches:*:
+    desc: Generate patch for a specific GPU worker node.
+    deps:
+      - scaffolding:dirs
+    vars:
+      NODE_NAME: '{{index .MATCH 0}}'
+    sources:
+      - talos/worker-gpu/main.jsonnet
+      - talos/worker-gpu/spec.json
+      - lib/asgard/talos.libsonnet
+    generates:
+      - '{{.BUILD_DIR}}/talos/patches/{{.NODE_NAME}}.yml'
+    cmds:
+      - >-
+        tk show --dangerous-allow-redirect
+        --tla-str hostname={{(index .GPU_WORKERS .NODE_NAME).hostname}}
+        --tla-str installDisk={{(index .GPU_WORKERS .NODE_NAME).disk}}
+        talos/worker-gpu
+        | yq 'del(.metadata) | (select(.kind == "MachineConfig") | del(.apiVersion, .kind)) // .'
+        > {{.BUILD_DIR}}/talos/patches/{{.NODE_NAME}}.yml
+
+  talos:worker-gpu:patches:
+    desc: Generate patches for all GPU worker nodes.
+    deps:
+      - for:
+          var: GPU_WORKERS
+        task: talos:worker-gpu:patches:{{.KEY}}
+
+  talos:worker-gpu:configs:*:
+    desc: Generate config for a specific GPU worker node.
+    deps:
+      - scaffolding:dirs
+      - talos:secrets
+      - talos:worker-gpu:patches:{{index .MATCH 0}}
+    vars:
+      NODE_NAME: '{{index .MATCH 0}}'
+    sources:
+      - talos/worker-gpu/main.jsonnet
+      - talos/worker-gpu/spec.json
+      - lib/asgard/talos.libsonnet
+      - '{{.BUILD_DIR}}/talos/secrets.yml'
+      - '{{.BUILD_DIR}}/talos/patches/{{.NODE_NAME}}.yml'
+    generates:
+      - '{{.BUILD_DIR}}/talos/configs/{{.NODE_NAME}}.yml'
+    cmds:
+      - >-
+        talosctl gen config
+        --with-secrets {{.BUILD_DIR}}/talos/secrets.yml
+        --config-patch @{{.BUILD_DIR}}/talos/patches/{{.NODE_NAME}}.yml
+        --output-types worker
+        --output {{.BUILD_DIR}}/talos/configs/{{.NODE_NAME}}.yml
+        --talos-version {{.TALOS_CONFIG_VERSION}}
+        --kubernetes-version {{.KUBERNETES_VERSION}}
+        --with-docs=false
+        --with-examples=false
+        --force
+        {{.CLUSTER_NAME}}
+        {{.CLUSTER_ENDPOINT}}
+
+  talos:worker-gpu:configs:
+    desc: Generate configs for all GPU worker nodes.
+    deps:
+      - for:
+          var: GPU_WORKERS
+        task: talos:worker-gpu:configs:{{.KEY}}

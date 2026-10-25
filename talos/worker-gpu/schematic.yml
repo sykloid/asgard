@@ -1,0 +1,8 @@
+customization:
+    extraKernelArgs:
+        - arm64.nobti
+        - pci=pcie_bus_safe
+    systemExtensions:
+        officialExtensions:
+            - siderolabs/nonfree-kmod-nvidia-lts
+            - siderolabs/nvidia-container-toolkit-lts
