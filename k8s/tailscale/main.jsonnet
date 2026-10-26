@@ -25,6 +25,7 @@ local es = import 'asgard/external-secrets.libsonnet';
       namespace: 'tailscale',
       values: {
         operatorConfig: {
+          hostname: 'asgard-k8s-api',
           defaultTags: [
             'tag:asgard-tailscale-operator',
           ],
@@ -33,13 +34,31 @@ local es = import 'asgard/external-secrets.libsonnet';
           defaultTags: 'tag:asgard-service',
         },
         apiServerProxyConfig: {
-          mode: 'noauth',
+          mode: 'true',
+          allowImpersonation: 'true',
         },
       },
     }),
     oauthSecret: es.new('operator-oauth')
                  + es.withSecret('client_id', 'tailscale-operator-client/username')
                  + es.withSecret('client_secret', 'tailscale-operator-client/credential'),
+
+    // Members of asgard:admins are mapped via the tailnet policy's tailscale.com/cap/kubernetes grant.
+    adminsBinding: {
+      apiVersion: 'rbac.authorization.k8s.io/v1',
+      kind: 'ClusterRoleBinding',
+      metadata: {
+        name: 'asgard-admins',
+      },
+      roleRef: {
+        apiGroup: 'rbac.authorization.k8s.io',
+        kind: 'ClusterRole',
+        name: 'cluster-admin',
+      },
+      subjects: [
+        { apiGroup: 'rbac.authorization.k8s.io', kind: 'Group', name: 'asgard:admins' },
+      ],
+    },
 
     gatewayClass: {
       apiVersion: 'gateway.networking.k8s.io/v1',

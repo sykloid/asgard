@@ -4,5 +4,5 @@ repositories:
   url: https://pkgs.tailscale.com/helmcharts
 requires:
 - chart: tailscale/tailscale-operator
-  version: 1.86.5
+  version: 1.104.2
 version: 1
